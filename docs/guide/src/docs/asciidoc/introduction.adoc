@@ -2,4 +2,10 @@
 [[_introduction]]
 = Introduction
 
-Lorem ipsum dolor sit amet
+Micronaut BigQuery library helps to simplify usage of BigQuery
+in Micronaut application.
+
+The main use case is running simple queries and updates.
+
+There is a Micronaut BigQuery Mock library which allows you to run
+against an arbitrary database instead of BigQuery.

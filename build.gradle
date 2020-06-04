@@ -116,9 +116,33 @@ subprojects { subproject ->
     if (subproject.name == 'guide') return
 
     apply plugin: 'groovy'
+    apply plugin: 'java-library'
 
     dependencies {
-        // add your global dependencies
+        annotationProcessor platform("io.micronaut:micronaut-bom:" + micronautVersion)
+        compile platform("io.micronaut:micronaut-bom:" + micronautVersion)
+        testAnnotationProcessor platform("io.micronaut:micronaut-bom:" + micronautVersion)
+
+        annotationProcessor "io.micronaut:micronaut-inject-java"
+        annotationProcessor "io.micronaut:micronaut-validation"
+
+        compile "io.micronaut:micronaut-inject"
+        compile "io.micronaut:micronaut-validation"
+        compile "io.micronaut:micronaut-runtime"
+
+        compileOnly "org.codehaus.groovy:groovy"
+
+        testAnnotationProcessor "io.micronaut:micronaut-inject-java"
+        testCompileOnly "io.micronaut:micronaut-inject-groovy"
+
+        testCompile "io.micronaut:micronaut-inject-groovy"
+        testCompile "io.micronaut.test:micronaut-test-spock"
+
+        testCompile("org.spockframework:spock-core") {
+            exclude group: "org.codehaus.groovy", module: "groovy-all"
+        }
+        testCompile 'net.bytebuddy:byte-buddy:1.10.6'
+        testCompile "org.objenesis:objenesis:3.1"
     }
 
     // useful for Micronaut

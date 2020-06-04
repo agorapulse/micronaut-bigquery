@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 config {
     bintray {
         enabled = true
@@ -23,7 +22,6 @@ config {
 }
 
 dependencies {
-    api 'com.google.cloud:google-cloud-bigquery:1.110.0'
-    api 'com.google.auth:google-auth-library-oauth2-http:0.20.0'
-    api 'space.jasan:groovy-closure-support:0.5.1'
+    api project(':micronaut-bigquery')
+    api "org.codehaus.groovy:groovy-sql:2.5.12"
 }

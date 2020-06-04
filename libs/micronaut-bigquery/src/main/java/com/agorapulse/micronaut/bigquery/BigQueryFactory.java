@@ -15,15 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.agorapulse.micronaut.bigquery;
 
-config {
-    bintray {
-        enabled = true
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryOptions;
+import io.micronaut.context.annotation.Bean;
+import io.micronaut.context.annotation.Factory;
+import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.env.Environment;
+
+import javax.inject.Singleton;
+
+@Factory
+public class BigQueryFactory {
+
+    @Bean
+    @Singleton
+    @Requires(env = Environment.GOOGLE_COMPUTE)
+    public BigQuery bigQuery() {
+        return  BigQueryOptions.getDefaultInstance().getService();
     }
-}
 
-dependencies {
-    api 'com.google.cloud:google-cloud-bigquery:1.110.0'
-    api 'com.google.auth:google-auth-library-oauth2-http:0.20.0'
-    api 'space.jasan:groovy-closure-support:0.5.1'
 }

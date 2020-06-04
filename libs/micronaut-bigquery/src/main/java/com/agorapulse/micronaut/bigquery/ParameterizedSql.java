@@ -15,15 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.agorapulse.micronaut.bigquery;
 
-config {
-    bintray {
-        enabled = true
+import java.util.Map;
+
+public final class ParameterizedSql {
+
+    public static ParameterizedSql from(Map<String, Object> namedParameters, String sql) {
+        return new ParameterizedSql(namedParameters, sql);
     }
-}
 
-dependencies {
-    api 'com.google.cloud:google-cloud-bigquery:1.110.0'
-    api 'com.google.auth:google-auth-library-oauth2-http:0.20.0'
-    api 'space.jasan:groovy-closure-support:0.5.1'
+    private ParameterizedSql(Map<String, Object> namedParameters, String sql) {
+        this.namedParameters = namedParameters;
+        this.sql = sql;
+    }
+
+    public Map<String, Object> getNamedParameters() {
+        return namedParameters;
+    }
+
+    public String getSql() {
+        return sql;
+    }
+
+    private final Map<String, Object> namedParameters;
+    private final String sql;
 }
