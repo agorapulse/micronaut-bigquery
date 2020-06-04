@@ -98,7 +98,7 @@ config {
 
     docs {
         groovydoc {
-            agreggate {
+            aggregate {
                 enabled = false
             }
         }
