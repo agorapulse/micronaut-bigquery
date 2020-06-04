@@ -32,7 +32,7 @@ config {
     info {
         name        = 'Micronaut BigQuery'
         vendor      = 'Agorapulse'
-        description = 'Micronaut Bigquery Library'
+        description = 'Micronaut BigQuery Library'
 
         links {
             website      = "https://github.com/" + slug
@@ -96,6 +96,13 @@ config {
         }
     }
 
+    docs {
+        groovy {
+            agreggate {
+                enabled = false
+            }
+        }
+    }
 }
 
 allprojects {
