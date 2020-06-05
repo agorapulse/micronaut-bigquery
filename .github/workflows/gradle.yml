@@ -17,7 +17,8 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-
+    - name: Restore Google Credentials
+      run: echo $GOOGLE_APPLICATION_CREDENTIALS_JSON > libs/micronaut-bigquery/src/test/resources/google-credentials.json
     - uses: actions/cache@v1
       with:
         path: ~/.gradle/caches
