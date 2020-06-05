@@ -37,7 +37,7 @@ plugins {
 }
 
 projects {
-    directories = ['libs', 'docs']
+    directories = ['libs', 'docs', 'test-libs']
 }
 
 rootProject.name = 'micronaut-bigquery-root'

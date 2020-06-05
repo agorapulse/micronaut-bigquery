@@ -15,20 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-config {
-    bintray {
-        enabled = true
-    }
-}
+package com.agorapulse.micronaut.bigquery.tck;
 
-dependencies {
-    api project(':micronaut-bigquery')
-    api 'com.axiomalaska:jdbc-named-parameters:1.1'
+public enum Role {
 
-    testCompile project(':micronaut-bigquery-tck')
+    GUEST,
+    USER,
+    ADMIN;
 
-    testCompile 'io.micronaut.configuration:micronaut-jdbc-tomcat'
-    testCompile 'org.postgresql:postgresql:42.2.9'
-    testCompile 'org.testcontainers:spock:1.14.3'
-    testCompile 'org.testcontainers:postgresql:1.14.3'
 }

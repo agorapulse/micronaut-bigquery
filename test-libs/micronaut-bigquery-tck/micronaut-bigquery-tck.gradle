@@ -23,12 +23,8 @@ config {
 
 dependencies {
     api project(':micronaut-bigquery')
-    api 'com.axiomalaska:jdbc-named-parameters:1.1'
 
-    testCompile project(':micronaut-bigquery-tck')
-
-    testCompile 'io.micronaut.configuration:micronaut-jdbc-tomcat'
-    testCompile 'org.postgresql:postgresql:42.2.9'
-    testCompile 'org.testcontainers:spock:1.14.3'
-    testCompile 'org.testcontainers:postgresql:1.14.3'
+    api ("org.spockframework:spock-core") {
+        exclude group: "org.codehaus.groovy", module: "groovy-all"
+    }
 }
