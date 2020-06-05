@@ -31,7 +31,7 @@ public class BigQueryFactory {
 
     @Bean
     @Singleton
-    @Requires(env = Environment.GOOGLE_COMPUTE)
+    @Requires(condition = BigQueryCredentialsPresent.class)
     public BigQuery bigQuery() {
         return  BigQueryOptions.getDefaultInstance().getService();
     }

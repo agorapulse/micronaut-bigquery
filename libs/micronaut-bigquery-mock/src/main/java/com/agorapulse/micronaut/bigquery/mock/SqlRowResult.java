@@ -40,7 +40,7 @@ public class SqlRowResult implements RowResult {
 
     @Override
     public boolean isNull(String key) {
-        return getValue(key, k -> result.getObject(key) != null);
+        return getValue(key, k -> result.getObject(key) == null);
     }
 
     @Override

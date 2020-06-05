@@ -30,12 +30,8 @@ public interface RowResult {
     Long getLongValue(String key);
     Instant getTimestampValue(String key);
 
-    default LocalDateTime getDateTimeValue(String key) {
-        return isNull(key) ? LocalDateTime.ofInstant(getTimestampValue(key), ZoneOffset.UTC) : null;
-    }
-
     default <E extends Enum<E>> E getEnumValue(String key, Class<E> enumType) {
-        return isNull(key) ? Enum.valueOf(enumType, getStringValue(key)) : null;
+        return isNull(key) ? null : Enum.valueOf(enumType, getStringValue(key));
     }
 
 }

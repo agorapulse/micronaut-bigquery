@@ -42,11 +42,14 @@ abstract class BigQueryServiceSpec extends Specification {
         bigquery = context.getBean(BigQueryService)
     }
 
-    ApplicationContext buildContext() {
-        ApplicationContext.build().build()
-    }
+    abstract ApplicationContext buildContext()
 
     void 'handle bigquery operations'() {
+        when:
+            service.deleteEverything()
+        then:
+            noExceptionThrown()
+
         when:
             Person vlad = service.createPerson('Vladimir', 'Orany', 'vlad@agorapulse.com', Role.ADMIN)
         then:
@@ -86,12 +89,6 @@ abstract class BigQueryServiceSpec extends Specification {
             service.get(luke.id).present
 
         when:
-            service.deleteEverything()
-        then:
-            !service.get(vlad.id).present
-            !service.get(luke.id).present
-
-        when:
             service.findByLastNameUnsafe('\' bobby_tables').blockingFirst()
         then:
             thrown(RuntimeException)
@@ -112,6 +109,12 @@ abstract class BigQueryServiceSpec extends Specification {
             bigquery.execute('some fake sql')
         then:
             thrown(RuntimeException)
+
+        when:
+            service.deleteEverything()
+        then:
+            !service.get(vlad.id).present
+            !service.get(luke.id).present
     }
 
 }

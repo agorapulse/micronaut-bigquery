@@ -26,4 +26,10 @@ dependencies {
     api 'com.google.cloud:google-cloud-bigquery:1.110.0'
     api 'com.google.auth:google-auth-library-oauth2-http:0.20.0'
     api 'space.jasan:groovy-closure-support:0.5.1'
+
+    testCompile project(':micronaut-bigquery-tck')
+}
+
+test {
+    environment 'GOOGLE_APPLICATION_CREDENTIALS', file('src/test/resources/google-credentials.json').absolutePath
 }
