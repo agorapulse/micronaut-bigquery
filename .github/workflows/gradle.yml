@@ -9,7 +9,7 @@ jobs:
       GRADLE_OPTS: "-Xmx6g -Xms4g"
       CI: true
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-
+      GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
     steps:
     - uses: actions/checkout@v1
 
