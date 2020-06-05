@@ -18,8 +18,6 @@
 package com.agorapulse.micronaut.bigquery;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 public interface RowResult {
 

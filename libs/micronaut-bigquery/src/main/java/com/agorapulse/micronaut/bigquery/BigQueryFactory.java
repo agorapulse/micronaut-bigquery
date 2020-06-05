@@ -22,7 +22,6 @@ import com.google.cloud.bigquery.BigQueryOptions;
 import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.context.env.Environment;
 
 import javax.inject.Singleton;
 

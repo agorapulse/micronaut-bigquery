@@ -22,7 +22,6 @@ import com.agorapulse.micronaut.bigquery.RowResult;
 import io.micronaut.context.annotation.Value;
 import io.reactivex.Flowable;
 
-import javax.annotation.Nullable;
 import javax.inject.Singleton;
 import java.util.Collections;
 import java.util.Optional;

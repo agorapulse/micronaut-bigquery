@@ -23,8 +23,6 @@ import io.micronaut.core.beans.BeanIntrospector;
 import io.micronaut.core.beans.BeanProperty;
 import io.reactivex.Flowable;
 
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
