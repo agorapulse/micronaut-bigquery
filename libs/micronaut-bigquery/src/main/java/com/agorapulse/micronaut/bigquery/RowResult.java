@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020 Vladimir Orany.
+ * Copyright 2020 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@
 package com.agorapulse.micronaut.bigquery;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 public interface RowResult {
 
@@ -30,12 +28,8 @@ public interface RowResult {
     Long getLongValue(String key);
     Instant getTimestampValue(String key);
 
-    default LocalDateTime getDateTimeValue(String key) {
-        return isNull(key) ? LocalDateTime.ofInstant(getTimestampValue(key), ZoneOffset.UTC) : null;
-    }
-
     default <E extends Enum<E>> E getEnumValue(String key, Class<E> enumType) {
-        return isNull(key) ? Enum.valueOf(enumType, getStringValue(key)) : null;
+        return isNull(key) ? null : Enum.valueOf(enumType, getStringValue(key));
     }
 
 }

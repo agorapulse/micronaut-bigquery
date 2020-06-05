@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020 Vladimir Orany.
+ * Copyright 2020 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,14 +58,14 @@ public interface BigQueryService {
         execute(Collections.emptyMap(), sql);
     }
 
-    default <T> T insert(T object, String schema, String table) {
-        ParameterizedSql insert = generateInsert(object, schema, table);
+    default <T> T insert(T object, String dataset, String table) {
+        ParameterizedSql insert = generateInsert(object, dataset, table);
         execute(insert.getNamedParameters(), insert.getSql());
         return object;
     }
 
     @SuppressWarnings("unchecked")
-    default <T> ParameterizedSql generateInsert(T object, final String schema, String table) {
+    default <T> ParameterizedSql generateInsert(T object, final String dataset, String table) {
         BeanIntrospection<T> introspection = BeanIntrospector.SHARED.getIntrospection((Class<T>) object.getClass());
 
         Collection<BeanProperty<T, Object>> fields = introspection.getBeanProperties();
@@ -84,7 +84,7 @@ public interface BigQueryService {
 
         String builder = String.format(
                 "insert into %s.%s (%s) values (%s)",
-                schema,
+                dataset,
                 table,
                 String.join(", ", keys),
                 keys.stream().map(k -> getVariablePrefix() + k).collect(Collectors.joining(", "))

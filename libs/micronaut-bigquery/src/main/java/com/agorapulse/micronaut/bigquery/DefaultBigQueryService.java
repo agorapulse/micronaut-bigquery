@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020 Vladimir Orany.
+ * Copyright 2020 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,18 @@
 package com.agorapulse.micronaut.bigquery;
 
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.QueryParameterValue;
+import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.TableResult;
 import io.reactivex.Flowable;
 
 import javax.inject.Singleton;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -67,9 +70,9 @@ public class DefaultBigQueryService implements BigQueryService {
 
 
             TableResult result = completedJob.getQueryResults();
-            return Flowable.fromIterable(result.iterateAll()).map(FieldValueListRowResult::new).map(builder::apply);
-        } catch (InterruptedException e) {
-            throw new IllegalStateException("Waiting for the result has been interrupted!", e);
+            return Flowable.fromIterable(result.iterateAll()).filter(r -> !r.isEmpty()).map(FieldValueListRowResult::new).map(builder::apply);
+        } catch (InterruptedException | BigQueryException e) {
+            throw new IllegalStateException("Could not execute query: " + sql, e);
         }
     }
 
@@ -95,13 +98,13 @@ public class DefaultBigQueryService implements BigQueryService {
             } else if (completedJob.getStatus().getError() != null) {
                 throw new IllegalStateException(completedJob.getStatus().getError().toString());
             }
-        } catch (InterruptedException e) {
-            throw new IllegalStateException("Waiting for the result has been interrupted!", e);
+        } catch (InterruptedException | BigQueryException e) {
+            throw new IllegalStateException("Could not execute sql: " + sql, e);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, QueryParameterValue> toNamedParameters(Map<String, Object> namedParameters) {
+    private Map<String, QueryParameterValue> toNamedParameters(Map<String, Object> namedParameters) {
         if (namedParameters.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -109,7 +112,12 @@ public class DefaultBigQueryService implements BigQueryService {
         final Map<String, QueryParameterValue> result = new LinkedHashMap<>();
 
         namedParameters.forEach((key, value) -> {
-                result.put(key, QueryParameterValue.of(value, (Class<Object>) value.getClass()));
+            Object converted = convertIfNecessary(value);
+            if (converted instanceof Instant) {
+                result.put(key, QueryParameterValue.of(((Instant) converted).toEpochMilli(), StandardSQLTypeName.TIMESTAMP));
+            } else {
+                result.put(key, QueryParameterValue.of(converted, (Class<Object>) converted.getClass()));
+            }
         });
 
         return result;

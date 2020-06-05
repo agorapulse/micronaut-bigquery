@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020 Vladimir Orany.
+ * Copyright 2020 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,27 +36,27 @@ class FieldValueListRowResult implements RowResult {
 
     @Override
     public Boolean getBooleanValue(String key) {
-        return values.get(key).isNull() ? values.get(key).getBooleanValue() : null;
+        return values.get(key).isNull() ? null : values.get(key).getBooleanValue();
     }
 
     @Override
     public Double getDoubleValue(String key) {
-        return values.get(key).isNull() ? values.get(key).getDoubleValue() : null;
+        return values.get(key).isNull() ? null : values.get(key).getDoubleValue();
     }
 
     @Override
     public String getStringValue(String key) {
-        return values.get(key).isNull() ? values.get(key).getStringValue() : null;
+        return values.get(key).isNull() ? null : values.get(key).getStringValue();
     }
 
     @Override
     public Long getLongValue(String key) {
-        return values.get(key).isNull() ? values.get(key).getLongValue() : null;
+        return values.get(key).isNull() ? null : values.get(key).getLongValue();
     }
 
     @Override
     public Instant getTimestampValue(String key) {
-        return values.get(key).isNull() ? Instant.ofEpochMilli(values.get(key).getTimestampValue() / 1000) : null;
+        return values.get(key).isNull() ? null : Instant.ofEpochMilli(values.get(key).getTimestampValue());
     }
 
 }

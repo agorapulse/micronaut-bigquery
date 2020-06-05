@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020 Vladimir Orany.
+ * Copyright 2020 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.google.cloud.bigquery.BigQueryOptions;
 import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
-import io.micronaut.context.env.Environment;
 
 import javax.inject.Singleton;
 
@@ -31,7 +30,7 @@ public class BigQueryFactory {
 
     @Bean
     @Singleton
-    @Requires(env = Environment.GOOGLE_COMPUTE)
+    @Requires(condition = BigQueryCredentialsPresent.class)
     public BigQuery bigQuery() {
         return  BigQueryOptions.getDefaultInstance().getService();
     }

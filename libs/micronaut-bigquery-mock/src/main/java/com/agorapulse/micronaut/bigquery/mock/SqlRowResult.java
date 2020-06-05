@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020 Vladimir Orany.
+ * Copyright 2020 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public class SqlRowResult implements RowResult {
 
     @Override
     public boolean isNull(String key) {
-        return getValue(key, k -> result.getObject(key) != null);
+        return getValue(key, k -> result.getObject(key) == null);
     }
 
     @Override
