@@ -20,21 +20,36 @@ package com.agorapulse.micronaut.bigquery.mock;
 import com.agorapulse.micronaut.bigquery.BigQueryService;
 import com.agorapulse.micronaut.bigquery.DefaultBigQueryService;
 import com.agorapulse.micronaut.bigquery.RowResult;
-import groovy.lang.Closure;
-import groovy.sql.Sql;
+import com.axiomalaska.jdbc.NamedParameterPreparedStatement;
 import io.micronaut.context.annotation.Replaces;
 import io.reactivex.Flowable;
 
 import javax.inject.Singleton;
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Map;
 import java.util.function.Function;
 
 @Singleton
 @Replaces(DefaultBigQueryService.class)
 public class SqlBigQueryService implements BigQueryService {
+
+    private static class Database {
+        private final Connection connection;
+        private final PreparedStatement statement;
+        private final ResultSet resultSet;
+
+        public Database(Connection connection, PreparedStatement statement, ResultSet resultSet) {
+            this.connection = connection;
+            this.statement = statement;
+            this.resultSet = resultSet;
+        }
+    }
 
     private final DataSource dataSource;
 
@@ -45,35 +60,44 @@ public class SqlBigQueryService implements BigQueryService {
     @Override
     public <T> Flowable<T> query(Map<String, Object> namedParameters, String sqlString, final Function<RowResult, T> builder) {
 
-        return Flowable.generate(emitter -> {
-            Sql sql = new Sql(dataSource);
-            sql.query(namedParameters, sqlString, new Closure<Void>(this, this) {
-                @Override
-                public Void call(Object... args) {
-                    ResultSet resultSet = (ResultSet) args[0];
-                    try {
-                        SqlRowResult rowResult = new SqlRowResult(resultSet);
-                        while (resultSet.next()) {
-                            emitter.onNext(builder.apply(rowResult));
-                        }
+        return Flowable.generate(
+            () -> {
+                Connection connection = dataSource.getConnection();
+                NamedParameterPreparedStatement stmt = NamedParameterPreparedStatement.createNamedParameterPreparedStatement(connection, sqlString);
+                fillNamedParameters(namedParameters, stmt);
+                return new Database(connection, stmt, stmt.executeQuery());
+            },
+            (database, emitter) -> {
+                try {
+                    SqlRowResult rowResult = new SqlRowResult(database.resultSet);
+                    if (database.resultSet.next()) {
+                        emitter.onNext(builder.apply(rowResult));
+                    } else {
                         emitter.onComplete();
-                    } catch (Exception e) {
-                        emitter.onError(e);
                     }
-                    return null;
+                } catch (Exception e) {
+                    emitter.onError(e);
                 }
-            });
-        });
-
+                return database;
+            },
+            database -> {
+                database.resultSet.close();
+                database.statement.close();
+                database.connection.close();
+            }
+        );
     }
 
     @Override
     public void execute(Map<String, Object> namedParameters, String sqlString) {
-        try {
-            Sql sql = new Sql(dataSource);
-            sql.execute(namedParameters, sqlString);
-        } catch (SQLException throwables) {
-            throw new IllegalArgumentException("Cannot " + sqlString, throwables);
+        try (
+            Connection connection = dataSource.getConnection();
+            NamedParameterPreparedStatement stmt = NamedParameterPreparedStatement.createNamedParameterPreparedStatement(connection, sqlString)
+        ) {
+            fillNamedParameters(namedParameters, stmt);
+            stmt.execute();
+        } catch (SQLException e) {
+            throw new IllegalArgumentException("Cannot execute " + sqlString, e);
         }
     }
 
@@ -82,4 +106,21 @@ public class SqlBigQueryService implements BigQueryService {
         return ":";
     }
 
+    private void fillNamedParameters(Map<String, Object> namedParameters, NamedParameterPreparedStatement stmt) {
+        namedParameters.forEach((parameter, x) -> {
+            try {
+                stmt.setObject(parameter, convertIfNecessary(x));
+            } catch (SQLException throwables) {
+                throw new IllegalStateException("Cannot set named parameter " + parameter + " with value " + x, throwables);
+            }
+        });
+    }
+
+    @Override
+    public Object convertIfNecessary(Object object) {
+        if (object instanceof Instant) {
+            return new Timestamp(((Instant) object).toEpochMilli());
+        }
+        return BigQueryService.super.convertIfNecessary(object);
+    }
 }

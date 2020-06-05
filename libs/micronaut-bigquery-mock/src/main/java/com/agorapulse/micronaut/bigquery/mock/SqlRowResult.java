@@ -25,6 +25,13 @@ import java.util.Optional;
 
 public class SqlRowResult implements RowResult {
 
+    @FunctionalInterface
+    private interface Extractor<R> {
+
+        R extract(String key) throws SQLException;
+
+    }
+
     private final ResultSet result;
 
     public SqlRowResult(ResultSet result) {
@@ -33,56 +40,42 @@ public class SqlRowResult implements RowResult {
 
     @Override
     public boolean isNull(String key) {
-        try {
-            return result.getObject(key) != null;
-        } catch (SQLException e) {
-            throw new IllegalStateException("Cannot read object value", e);
-        }
+        return getValue(key, k -> result.getObject(key) != null);
     }
 
     @Override
     public Boolean getBooleanValue(String key) {
-        try {
-            return result.getBoolean(key);
-        } catch (SQLException e) {
-            throw new IllegalStateException("Cannot read boolean value", e);
-        }
+        return getValue(key, result::getBoolean);
     }
 
     @Override
     public Double getDoubleValue(String key) {
-        try {
-            return result.getDouble(key);
-        } catch (SQLException e) {
-            throw new IllegalStateException("Cannot read double value", e);
-        }
+        return getValue(key, result::getDouble);
     }
 
     @Override
     public String getStringValue(String key) {
-        try {
-            return result.getString(key);
-        } catch (SQLException e) {
-            throw new IllegalStateException("Cannot read string value", e);
-        }
+        return getValue(key, result::getString);
     }
 
     @Override
     public Long getLongValue(String key) {
-        try {
-            return result.getLong(key);
-        } catch (SQLException e) {
-            throw new IllegalStateException("Cannot read long value", e);
-        }
+        return getValue(key, result::getLong);
     }
 
     @Override
     public Instant getTimestampValue(String key) {
+        return getValue(key, k -> Optional.ofNullable(result.getTimestamp(k)).map(date -> Instant.ofEpochMilli(date.getTime())).orElse(null));
+    }
+
+    private <R> R getValue(String key, Extractor<R> extractor) {
         try {
-            return Optional.ofNullable(result.getDate(key)).map(date -> Instant.ofEpochMilli(date.getTime())).orElse(null);
+            return extractor.extract(key);
         } catch (SQLException e) {
-            throw new IllegalStateException("Cannot read timestamp value", e);
+            throw new IllegalArgumentException("Cannot read value " + key, e);
         }
     }
+
+
 
 }
