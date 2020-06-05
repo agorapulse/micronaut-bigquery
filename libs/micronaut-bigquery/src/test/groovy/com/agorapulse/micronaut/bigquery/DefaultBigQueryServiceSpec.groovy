@@ -4,6 +4,7 @@ import com.agorapulse.micronaut.bigquery.tck.BigQueryServiceSpec
 import io.micronaut.context.ApplicationContext
 import spock.lang.Requires
 
+@SuppressWarnings('ClassStartsWithBlankLine')
 @Requires({
     System.getenv('GOOGLE_APPLICATION_CREDENTIALS') &&
         (
