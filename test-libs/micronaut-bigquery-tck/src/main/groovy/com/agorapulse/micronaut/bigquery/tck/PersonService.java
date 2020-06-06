@@ -17,96 +17,26 @@
  */
 package com.agorapulse.micronaut.bigquery.tck;
 
-import com.agorapulse.micronaut.bigquery.BigQueryService;
-import com.agorapulse.micronaut.bigquery.RowResult;
-import io.micronaut.context.annotation.Value;
 import io.reactivex.Flowable;
 
-import javax.inject.Singleton;
-import java.util.Collections;
 import java.util.Optional;
 
-@Singleton
-public class PersonService {
+public interface PersonService {
 
-    private final String schema;
-    private final String table;
-    private final BigQueryService bq;
+    Person createPerson(String firstName, String lastName, String email, Role role);
 
-    public PersonService(
-        @Value("${person.schema:persons}") String schema,
-        @Value("${person.table:persons}") String table,
-        BigQueryService bq
-    ) {
-        this.schema = schema;
-        this.table = table;
-        this.bq = bq;
-    }
+    Optional<Person> get(long id);
 
-    public Person createPerson(String firstName, String lastName, String email, Role role) {
-        Person person = new Person();
-        person.setId(System.currentTimeMillis());
-        person.setFirstName(firstName);
-        person.setLastName(lastName);
-        person.setEmail(email);
-        person.setRole(role);
+    Optional<Person> getUnsafe(long id);
 
-        return bq.insert(person, schema, table);
-    }
+    Flowable<Person> findByLastNameUnsafe(String lastName);
 
-    public Optional<Person> get(long id) {
-        return bq.querySingle(
-            Collections.singletonMap("id", id),
-            String.format("select * from %s.%s where id = %sid", schema, table, bq.getVariablePrefix()),
-            PersonService::buildPerson
-        );
-    }
+    Flowable<Person> findByLastName(String lastName);
 
-    public Optional<Person> getUnsafe(long id) {
-        return bq.querySingle(
-            String.format("select * from %s.%s where id = %d", schema, table, id),
-            PersonService::buildPerson
-        );
-    }
+    void updateRole(long id, Role role);
 
-    public Flowable<Person> findByLastNameUnsafe(String lastName) {
-        return bq.query(
-            String.format("select * from %s.%s where last_name = '%s'", schema, table, lastName),
-            PersonService::buildPerson
-        );
-    }
+    void deletePerson(long id);
 
-    public Flowable<Person> findByLastName(String lastName) {
-        return bq.query(
-            Collections.singletonMap("last_name", lastName),
-            String.format("select * from %s.%s where last_name = %slast_name", schema, table, bq.getVariablePrefix()),
-            PersonService::buildPerson
-        );
-    }
+    void deleteEverything();
 
-    public void deletePerson(long id) {
-        bq.execute(
-            Collections.singletonMap("id", id),
-            String.format("delete from %s.%s where id = %sid", schema, table, bq.getVariablePrefix())
-        );
-    }
-
-    public void deleteEverything() {
-        bq.execute(
-            String.format("delete from %s.%s where 1 = 1", schema, table)
-        );
-    }
-
-    private static Person buildPerson(RowResult results) {
-        Person person = new Person();
-        person.setId(results.getLongValue("id"));
-        person.setFirstName(results.getStringValue("first_name"));
-        person.setLastName(results.getStringValue("last_name"));
-        person.setEmail(results.getStringValue("email"));
-        person.setRole(results.getEnumValue("role", Role.class));
-        person.setScore(results.getDoubleValue("score"));
-        person.setCreated(results.getTimestampValue("created"));
-        person.setEnabled(results.getBooleanValue("enabled"));
-        return person;
-    }
 }

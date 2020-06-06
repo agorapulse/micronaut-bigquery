@@ -35,18 +35,14 @@ import java.util.stream.Collectors;
 
 public interface BigQueryService {
 
-    <T> Flowable<T> query(Map<String, Object> namedParameters, String sql, Function<RowResult, T> builder);
-    void execute(Map<String, Object> namedParameters, String sql);
-
-    default String getVariablePrefix() {
-        return "@";
-    }
+    <T> Flowable<T> query(Map<String, ?> namedParameters, String sql, Function<RowResult, T> builder);
+    void execute(Map<String, ?> namedParameters, String sql);
 
     default <T> Optional<T> querySingle(String sql, Function<RowResult, T> builder) {
         return querySingle(Collections.emptyMap(), sql, builder);
     }
 
-    default <T> Optional<T> querySingle(Map<String, Object> namedParameters, String sql, Function<RowResult, T> builder) {
+    default <T> Optional<T> querySingle(Map<String, ?> namedParameters, String sql, Function<RowResult, T> builder) {
         return Optional.ofNullable(query(namedParameters, sql, builder).blockingFirst(null));
     }
 
@@ -87,7 +83,7 @@ public interface BigQueryService {
                 dataset,
                 table,
                 String.join(", ", keys),
-                keys.stream().map(k -> getVariablePrefix() + k).collect(Collectors.joining(", "))
+                keys.stream().map(k -> "@" + k).collect(Collectors.joining(", "))
         );
 
         return ParameterizedSql.from(values, builder);

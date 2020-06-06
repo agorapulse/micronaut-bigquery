@@ -21,16 +21,16 @@ import java.util.Map;
 
 public final class ParameterizedSql {
 
-    public static ParameterizedSql from(Map<String, Object> namedParameters, String sql) {
+    public static ParameterizedSql from(Map<String, ?> namedParameters, String sql) {
         return new ParameterizedSql(namedParameters, sql);
     }
 
-    private ParameterizedSql(Map<String, Object> namedParameters, String sql) {
+    private ParameterizedSql(Map<String, ?> namedParameters, String sql) {
         this.namedParameters = namedParameters;
         this.sql = sql;
     }
 
-    public Map<String, Object> getNamedParameters() {
+    public Map<String, ?> getNamedParameters() {
         return namedParameters;
     }
 
@@ -38,6 +38,6 @@ public final class ParameterizedSql {
         return sql;
     }
 
-    private final Map<String, Object> namedParameters;
+    private final Map<String, ?> namedParameters;
     private final String sql;
 }

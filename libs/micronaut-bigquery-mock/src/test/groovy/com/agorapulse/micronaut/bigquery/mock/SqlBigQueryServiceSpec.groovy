@@ -49,11 +49,13 @@ class SqlBigQueryServiceSpec extends BigQueryServiceSpec {
     @Shared
     PostgreSQLContainer container = new PostgreSQLContainer()
 
-    @Override
-    ApplicationContext buildContext() {
+    void setupSpec() {
         Sql sql = Sql.newInstance(container.jdbcUrl, container.username, container.password, DRIVER)
         sql.execute(TABLE_DEFINITION)
+    }
 
+    @Override
+    ApplicationContext buildContext() {
         return ApplicationContext.build(
             'datasources.default.url': container.jdbcUrl,
             'datasources.default.driverClassName': DRIVER,
