@@ -46,7 +46,7 @@ public class DefaultBigQueryService implements BigQueryService {
     }
 
     @Override
-    public <T> Flowable<T> query(Map<String, Object> namedParameters, String sql, Function<RowResult, T> builder) {
+    public <T> Flowable<T> query(Map<String, ?> namedParameters, String sql, Function<RowResult, T> builder) {
         QueryJobConfiguration queryConfig = QueryJobConfiguration
             .newBuilder(sql)
             .setUseLegacySql(false)
@@ -77,7 +77,7 @@ public class DefaultBigQueryService implements BigQueryService {
     }
 
     @Override
-    public void execute(Map<String, Object> namedParameters, String sql) {
+    public void execute(Map<String, ?> namedParameters, String sql) {
         QueryJobConfiguration queryConfig = QueryJobConfiguration
             .newBuilder(sql)
             .setUseLegacySql(false)
@@ -104,7 +104,7 @@ public class DefaultBigQueryService implements BigQueryService {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, QueryParameterValue> toNamedParameters(Map<String, Object> namedParameters) {
+    private Map<String, QueryParameterValue> toNamedParameters(Map<String, ?> namedParameters) {
         if (namedParameters.isEmpty()) {
             return Collections.emptyMap();
         }

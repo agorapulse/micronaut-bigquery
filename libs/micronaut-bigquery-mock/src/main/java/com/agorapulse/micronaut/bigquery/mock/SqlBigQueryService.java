@@ -58,12 +58,13 @@ public class SqlBigQueryService implements BigQueryService {
     }
 
     @Override
-    public <T> Flowable<T> query(Map<String, Object> namedParameters, String sqlString, final Function<RowResult, T> builder) {
+    public <T> Flowable<T> query(Map<String, ?> namedParameters, String sqlString, final Function<RowResult, T> builder) {
 
         return Flowable.generate(
             () -> {
                 Connection connection = dataSource.getConnection();
-                NamedParameterPreparedStatement stmt = NamedParameterPreparedStatement.createNamedParameterPreparedStatement(connection, sqlString);
+                String sql = fixPlaceholders(sqlString, namedParameters);
+                NamedParameterPreparedStatement stmt = NamedParameterPreparedStatement.createNamedParameterPreparedStatement(connection, sql);
                 fillNamedParameters(namedParameters, stmt);
                 return new Database(connection, stmt, stmt.executeQuery());
             },
@@ -89,10 +90,11 @@ public class SqlBigQueryService implements BigQueryService {
     }
 
     @Override
-    public void execute(Map<String, Object> namedParameters, String sqlString) {
+    public void execute(Map<String, ?> namedParameters, String sqlString) {
+        String sql = fixPlaceholders(sqlString, namedParameters);
         try (
             Connection connection = dataSource.getConnection();
-            NamedParameterPreparedStatement stmt = NamedParameterPreparedStatement.createNamedParameterPreparedStatement(connection, sqlString)
+            NamedParameterPreparedStatement stmt = NamedParameterPreparedStatement.createNamedParameterPreparedStatement(connection, sql)
         ) {
             fillNamedParameters(namedParameters, stmt);
             stmt.execute();
@@ -101,12 +103,7 @@ public class SqlBigQueryService implements BigQueryService {
         }
     }
 
-    @Override
-    public String getVariablePrefix() {
-        return ":";
-    }
-
-    private void fillNamedParameters(Map<String, Object> namedParameters, NamedParameterPreparedStatement stmt) {
+    private void fillNamedParameters(Map<String, ?> namedParameters, NamedParameterPreparedStatement stmt) {
         namedParameters.forEach((parameter, x) -> {
             try {
                 stmt.setObject(parameter, convertIfNecessary(x));
@@ -122,5 +119,13 @@ public class SqlBigQueryService implements BigQueryService {
             return new Timestamp(((Instant) object).toEpochMilli());
         }
         return BigQueryService.super.convertIfNecessary(object);
+    }
+
+    private static String fixPlaceholders(String sqlString, Map<String, ?> namedParameters) {
+        String result = sqlString;
+        for (String key : namedParameters.keySet()) {
+            result = result.replace("@" + key, ":" + key);
+        }
+        return result;
     }
 }

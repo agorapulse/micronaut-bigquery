@@ -21,6 +21,7 @@ import com.agorapulse.micronaut.bigquery.BigQueryService
 import io.micronaut.context.ApplicationContext
 import spock.lang.AutoCleanup
 import spock.lang.Specification
+import spock.lang.Unroll
 
 @SuppressWarnings([
     'AbstractClassWithoutAbstractMethod',
@@ -31,20 +32,22 @@ abstract class BigQueryServiceSpec extends Specification {
 
     @AutoCleanup ApplicationContext context
 
-    PersonService service
     BigQueryService bigquery
 
     void setup() {
         context = buildContext()
         context.start()
 
-        service = context.getBean(PersonService)
         bigquery = context.getBean(BigQueryService)
     }
 
     abstract ApplicationContext buildContext()
 
-    void 'handle bigquery operations'() {
+    @Unroll
+    @SuppressWarnings('AbcMetric')
+    void 'handle bigquery operations using #serviceType.simpleName'() {
+        given:
+            PersonService service = context.getBean(serviceType)
         when:
             service.deleteEverything()
         then:
@@ -83,6 +86,11 @@ abstract class BigQueryServiceSpec extends Specification {
             luke in oranysUnsafe
 
         when:
+            service.updateRole(vlad.id, Role.ADMIN)
+        then:
+            service.get(vlad.id).get().role == Role.ADMIN
+
+        when:
             service.deletePerson(vlad.id)
         then:
             !service.get(vlad.id).present
@@ -115,6 +123,11 @@ abstract class BigQueryServiceSpec extends Specification {
         then:
             !service.get(vlad.id).present
             !service.get(luke.id).present
+        where:
+            serviceType << [
+                JavaPersonService,
+                GroovyPersonService,
+            ]
     }
 
 }

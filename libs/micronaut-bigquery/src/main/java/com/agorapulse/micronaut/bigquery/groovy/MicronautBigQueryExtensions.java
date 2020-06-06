@@ -26,11 +26,13 @@ import groovy.transform.stc.FromString;
 import io.reactivex.Flowable;
 import space.jasan.support.groovy.closure.FunctionWithDelegate;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class MicronautBigQueryExtensions {
+
+    private static final List<String> PLACEHOLDERS_ALLOWED_AFTER_KEYWORD = Arrays.asList(
+        " where ", " on ", " set ", " values "
+    );
 
     public static <T> Flowable<T> query(
         BigQueryService self,
@@ -43,7 +45,7 @@ public class MicronautBigQueryExtensions {
 
     public static <T> Flowable<T> query(
         BigQueryService self,
-        Map<String, Object> namedParameters,
+        Map<String, ?> namedParameters,
         String sql,
         @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.bigquery.RowResult") Closure<T> builder
     ) {
@@ -61,14 +63,14 @@ public class MicronautBigQueryExtensions {
 
     public static <T> Optional<T> querySingle(
         BigQueryService self,
-        Map<String, Object> namedParameters,
+        Map<String, ?> namedParameters,
         String sql,
         @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.bigquery.RowResult") Closure<T> builder
     ) {
         return self.querySingle(namedParameters, sql, FunctionWithDelegate.create(builder));
     }
 
-    public static void write(BigQueryService self, GString gString) {
+    public static void execute(BigQueryService self, GString gString) {
         ParameterizedSql sql = from(self, gString);
         self.execute(sql.getNamedParameters(), sql.getSql());
     }
@@ -78,10 +80,15 @@ public class MicronautBigQueryExtensions {
         Map<String, Object> namedParameters = new LinkedHashMap<>();
         for (int i = 0; i < gString.getStrings().length; i++){
             builder.append(gString.getStrings()[i]);
+            String current = builder.toString().toLowerCase();
             if (i != gString.getStrings().length - 1) {
-                String varName = "var" + i;
-                builder.append(service.getVariablePrefix()).append(varName);
-                namedParameters.put(varName, service.convertIfNecessary(gString.getValues()[i]));
+                if (PLACEHOLDERS_ALLOWED_AFTER_KEYWORD.stream().anyMatch(current::contains)) {
+                    String varName = "var" + i;
+                    builder.append("@").append(varName);
+                    namedParameters.put(varName, service.convertIfNecessary(gString.getValues()[i]));
+                } else {
+                    builder.append(gString.getValues()[i]);
+                }
             }
         }
 
