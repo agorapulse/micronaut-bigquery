@@ -92,14 +92,26 @@ $(addBlockSwitches);
 <h1>Micronaut BigQuery Library</h1>
 <div class="details">
 <span id="author" class="author">Vladimir Orany</span><br>
-<span id="revnumber">version 0.1.0</span>
+<span id="revnumber">version 0.2.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#_introduction">1. Introduction</a></li>
-<li><a href="#_usage">2. Usage</a></li>
-<li><a href="#_links">3. Links</a></li>
+<li><a href="#_installation">2. Installation</a>
+<ul class="sectlevel2">
+<li><a href="#_connectiong_to_google_cloud">2.1. Connectiong to Google Cloud</a></li>
+</ul>
+</li>
+<li><a href="#_usage">3. Usage</a>
+<ul class="sectlevel2">
+<li><a href="#_inserting_new_rows">3.1. Inserting New Rows</a></li>
+<li><a href="#_running_queries">3.2. Running Queries</a></li>
+<li><a href="#_executing_write_operations">3.3. Executing Write Operations</a></li>
+<li><a href="#_testing">3.4. Testing</a></li>
+</ul>
+</li>
+<li><a href="#_links">4. Links</a></li>
 </ul>
 </div>
 </div>
@@ -115,21 +127,468 @@ in Micronaut application.</p>
 <p>The main use case is running simple queries and updates.</p>
 </div>
 <div class="paragraph">
-<p>There is a Micronaut BigQuery Mock library which allows you to run
+<p>There is a <code>micronaut-bigquery-mock</code> artefact which allows you to run
 against an arbitrary database instead of BigQuery.</p>
 </div>
+<div class="paragraph">
+<p>Groovy language has a first-class support. You can use <code>GString</code> to define staments which are
+automatically converted into named SQL statements.</p>
+</div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_usage"><a class="anchor" href="#_usage"></a>2. Usage</h2>
+<h2 id="_installation"><a class="anchor" href="#_installation"></a>2. Installation</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>In progress&#8230;&#8203;</p>
+<p>The libraries are available in JCenter repository:</p>
+</div>
+<div class="listingblock">
+<div class="title">Gradle Installation</div>
+<div class="content">
+<pre class="prettyprint highlight"><code>repositories {
+    jcenter()
+}
+
+dependencies {
+    // the main library
+    compile 'com.agorapulse:micronaut-bigquery:0.2.0'
+
+    // the mock library for testing
+    testCompile 'com.agorapulse:micronaut-bigqery-mock:0.2.0'
+
+    // required for testing using Testcontainers (see examples bellow)
+    testCompile 'io.micronaut.configuration:micronaut-jdbc-tomcat'
+    testCompile 'org.postgresql:postgresql:42.2.9'
+    testCompile 'org.testcontainers:spock:1.14.3'
+    testCompile 'org.testcontainers:postgresql:1.14.3'
+}</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_connectiong_to_google_cloud"><a class="anchor" href="#_connectiong_to_google_cloud"></a>2.1. Connectiong to Google Cloud</h3>
+<div class="paragraph">
+<p>To get started with the library locally you need to setup <code>GOOGLE_APPLICATION_CREDENTIALS</code> environment variable
+pointing to the JSON file obtained from Google Cloud Console. Follow the <a href="https://cloud.google.com/bigquery/docs/quickstarts/quickstart-client-libraries">Quickstart: Using client libraries</a> tutorial
+to get one.</p>
+</div>
+<div class="paragraph">
+<p>To use the JSON locally for running the application you can add following snippet into your <code>build.gradle</code> file:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code>run {
+    environment 'GOOGLE_APPLICATION_CREDENTIALS', file('path/to/credentials.json').absolutePath
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you are using the library within Google Cloud then BigQuery connection will be configured for you once the BigQuery API is enabled
+and configured for the project.</p>
+</div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_links"><a class="anchor" href="#_links"></a>3. Links</h2>
+<h2 id="_usage"><a class="anchor" href="#_usage"></a>3. Usage</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The library provides <code>BigQuery</code> and <code>BigQueryService</code> beans into the application context.
+<code>BigQueryService</code> has a couple of useful methods to execute SQL against BigQuery
+data warehouse - <code>insert</code>, <code>query</code> and <code>execute</code>.</p>
+</div>
+<div class="paragraph">
+<p>In a following examples we&#8217;re be reffering to a class <code>Person</code>:</p>
+</div>
+<div class="listingblock">
+<div class="title">Person</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@Introspected                                                                           <i class="conum" data-value="1"></i><b>(1)</b>
+public class Person {
+
+    private long id;
+    private boolean enabled = true;
+    private Instant created = Instant.now();
+    private double score = 1.0;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private Role role;
+
+    // getters, setters, equals, hash code
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>classes used for database mapping must be annotated with <code>@Introspected</code> (if you plan to use <code>insert</code> method)</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The example bellow are defined inside a person service class:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@Singleton
+public class JavaPersonService {
+
+    private final String schema;
+    private final String table;
+    private final BigQueryService bq;
+
+    public JavaPersonService(
+        @Value("${person.schema:persons}") String schema,
+        @Value("${person.table:persons}") String table,
+        BigQueryService bq
+    ) {
+        this.schema = schema;
+        this.table = table;
+        this.bq = bq;
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">@Singleton
+class GroovyPersonService {
+
+    private final String schema
+    private final String table
+    private final BigQueryService bq
+
+    GroovyPersonService(
+        @Value('${person.schema:persons}') String schema,
+        @Value('${person.table:persons}') String table,
+        BigQueryService bq
+    ) {
+        this.schema = schema
+        this.table = table
+        this.bq = bq
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_inserting_new_rows"><a class="anchor" href="#_inserting_new_rows"></a>3.1. Inserting New Rows</h3>
+<div class="paragraph">
+<p>Inserting new rows is very easy. You only need to suppy the object and the name of the data set and table.</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">public Person createPerson(String firstName, String lastName, String email, Role role) {
+    Person person = new Person();
+    person.setId(System.currentTimeMillis());
+    person.setFirstName(firstName);
+    person.setLastName(lastName);
+    person.setEmail(email);
+    person.setRole(role);
+
+    return bq.insert(person, schema, table);
+}</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">Person createPerson(String firstName, String lastName, String email, Role role) {
+    return bq.insert(new Person(
+        id: System.currentTimeMillis(),
+        firstName: firstName,
+        lastName: lastName,
+        role: role
+    ), schema, table)
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_running_queries"><a class="anchor" href="#_running_queries"></a>3.2. Running Queries</h3>
+<div class="paragraph">
+<p>If you want to retrieve single item you can run <code>querySingle</code> method which returns an <code>Optional</code>:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">public Optional&lt;Person&gt; get(long id) {
+    return bq.querySingle(
+        Collections.singletonMap("id", id),                                         <i class="conum" data-value="1"></i><b>(1)</b>
+        String.format("select * from %s.%s where id = @id", schema, table),         <i class="conum" data-value="2"></i><b>(2)</b>
+        JavaPersonService::buildPerson                                              <i class="conum" data-value="3"></i><b>(3)</b>
+    );
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>define the named parameter map</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>BigQuery uses <code>@</code> prefix for the named parameters, <code>:</code> won&#8217;t be accepted</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td><code>buildPerson</code> method reference constructs the <code>Person</code> object</td>
+</tr>
+</table>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">Optional&lt;Person&gt; get(long id) {
+    return bq.querySingle("select * from ${schema}.${table} where id = $id") {      <i class="conum" data-value="1"></i><b>(1)</b>
+        return buildPerson(it)                                                      <i class="conum" data-value="2"></i><b>(2)</b>
+    }
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>use <code>GString</code> to define the query, only variables after first occurence of <code>where</code>, <code>on</code>, <code>set</code>, <code>values</code> are considered named parameters so it is safe to use variables for data set and table</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td><code>buildPerson</code> called from within the closure</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>If you want to retrieve single more items you can run <code>query</code> method which returns <code>Flowable</code>:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">public Flowable&lt;Person&gt; findByLastName(String lastName) {
+    return bq.query(
+        Collections.singletonMap("last_name", lastName),
+        String.format("select * from %s.%s where last_name = @last_name", schema, table),
+        JavaPersonService::buildPerson
+    );
+}</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">Flowable&lt;Person&gt; findByLastName(String lastName) {
+    return bq.query("select * from ${schema}.${table} where last_name = $lastName") {
+        return buildPerson(it)
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is how the <code>buildPerson</code> method looks like:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">private static Person buildPerson(RowResult result) {
+    Person person = new Person();
+    person.setId(result.getLongValue("id"));
+    person.setFirstName(result.getStringValue("first_name"));
+    person.setLastName(result.getStringValue("last_name"));
+    person.setEmail(result.getStringValue("email"));
+    person.setRole(result.getEnumValue("role", Role.class));
+    person.setScore(result.getDoubleValue("score"));
+    person.setCreated(result.getTimestampValue("created"));
+    person.setEnabled(result.getBooleanValue("enabled"));
+    return person;
+}</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">private static Person buildPerson(RowResult result) {
+    new Person(
+        id: result.getLongValue('id'),
+        firstName: result.getStringValue('first_name'),
+        lastName: result.getStringValue('last_name'),
+        email: result.getStringValue('email'),
+        role: result.getEnumValue('role', Role),
+        score: result.getDoubleValue('score'),
+        created: result.getTimestampValue('created'),
+        enabled: result.getBooleanValue('enabled')
+    )
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_executing_write_operations"><a class="anchor" href="#_executing_write_operations"></a>3.3. Executing Write Operations</h3>
+<div class="paragraph">
+<p>You can execute write operations using <code>execute</code> method. This method does not return any values but if there is a problem
+with your statement it will throw an exception.</p>
+</div>
+<div class="paragraph">
+<p>This is an example of updating a role of the <code>Person</code>:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">public void updateRole(long id, Role role) {
+    bq.execute(
+        ImmutableMap.of("id", id, "role", role),                                    <i class="conum" data-value="1"></i><b>(1)</b>
+        String.format("update %s.%s set role = @role where id = @id", schema, table)<i class="conum" data-value="2"></i><b>(2)</b>
+    );
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>define the named parameter map</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>BigQuery uses <code>@</code> prefix for the named parameters, <code>:</code> won&#8217;t be accepted</td>
+</tr>
+</table>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">void updateRole(long id, Role role) {
+    bq.execute "update ${schema}.${table} set role = $role where id = $id"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is an example of deleting a <code>Person</code>:</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">public void deletePerson(long id) {
+    bq.execute(
+        Collections.singletonMap("id", id),                                         <i class="conum" data-value="1"></i><b>(1)</b>
+        String.format("delete from %s.%s where id = @id", schema, table)            <i class="conum" data-value="2"></i><b>(2)</b>
+    );
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>define the named parameter map</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>BigQuery uses <code>@</code> prefix for the named parameters, <code>:</code> won&#8217;t be accepted</td>
+</tr>
+</table>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">void deletePerson(long id) {
+    bq.execute "delete from ${schema}.${table} where id = $id"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_testing"><a class="anchor" href="#_testing"></a>3.4. Testing</h3>
+<div class="paragraph">
+<p>Once <code>micronaut-bigquery-mock</code> is on the classpath the <code>BigQueryService</code> is replaced with pure SQL implementation.</p>
+</div>
+<div class="paragraph">
+<p>You can use Testcontainers to setup a test database which emulates BigQuery:</p>
+</div>
+<div class="listingblock">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">@Testcontainers
+class PersonServiceSpec {
+
+    private static final String TABLE_DEFINITION = '''
+    CREATE SCHEMA persons;
+    CREATE TABLE persons.persons (
+        id bigserial primary key,
+        first_name character varying(256),
+        last_name character varying(256),
+        email character varying(256),
+        role character varying(10),
+        score numeric,
+        enabled boolean,
+        created timestamp
+    );
+    '''
+
+    private static final String DRIVER = 'org.postgresql.Driver'
+
+    @Shared PostgreSQLContainer container = new PostgreSQLContainer()                   <i class="conum" data-value="1"></i><b>(1)</b>
+    @AutoCleanup ApplicationContext context
+
+    void setupSpec() {
+        Sql sql = Sql.newInstance(
+            container.jdbcUrl,
+            container.username,
+            container.password,
+            DRIVER
+        )
+        sql.execute(TABLE_DEFINITION)                                                   <i class="conum" data-value="2"></i><b>(2)</b>
+    }
+
+    void setup() {
+        context = ApplicationContext.build(                                             <i class="conum" data-value="3"></i><b>(3)</b>
+            'datasources.default.url': container.jdbcUrl,
+            'datasources.default.driverClassName': DRIVER,
+            'datasources.default.username': container.username,
+            'datasources.default.password': container.password,
+        ).build()
+        context.start()
+    }
+
+    void 'test person service'() {
+        given:
+            PersonService service = context.getBean(serviceType)                        <i class="conum" data-value="4"></i><b>(4)</b>
+            // tests
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Using PostgreSQL running using Testcontainers to emulate BigQuery</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>Create the table inside the test database</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>Start Micronaut context with a default datasource pointing to the test database</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="4"></i><b>4</b></td>
+<td>Get the instance of the service under test from the application context</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_links"><a class="anchor" href="#_links"></a>4. Links</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p><a href="api/index.html" target="_blank" rel="noopener">Javadoc</a></p>
@@ -142,8 +601,8 @@ against an arbitrary database instead of BigQuery.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.1.0<br>
-Last updated 2020-06-04 10:54:55 UTC
+Version 0.2.0<br>
+Last updated 2020-06-07 05:57:52 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
