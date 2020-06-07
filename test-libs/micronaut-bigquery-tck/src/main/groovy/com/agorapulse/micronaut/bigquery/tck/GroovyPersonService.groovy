@@ -29,6 +29,7 @@ import javax.inject.Singleton
 @CompileStatic
 class GroovyPersonService implements PersonService {
 
+    // tag::service[]
     private final String schema
     private final String table
     private final BigQueryService bq
@@ -42,8 +43,10 @@ class GroovyPersonService implements PersonService {
         this.table = table
         this.bq = bq
     }
+    // end::service[]
 
     @Override
+    // tag::new-person[]
     Person createPerson(String firstName, String lastName, String email, Role role) {
         return bq.insert(new Person(
             id: System.currentTimeMillis(),
@@ -52,13 +55,16 @@ class GroovyPersonService implements PersonService {
             role: role
         ), schema, table)
     }
+    // end::new-person[]
 
     @Override
+    // tag::query-single[]
     Optional<Person> get(long id) {
-        return bq.querySingle("select * from ${schema}.${table} where id = $id") {
-            return buildPerson(it)
+        return bq.querySingle("select * from ${schema}.${table} where id = $id") {      // <1>
+            return buildPerson(it)                                                      // <2>
         }
     }
+    // end::query-single[]
 
     @Override
     Optional<Person> getUnsafe(long id) {
@@ -69,33 +75,40 @@ class GroovyPersonService implements PersonService {
 
     @Override
     Flowable<Person> findByLastNameUnsafe(String lastName) {
+        return bq.query(lastName: lastName,"select * from ${schema}.${table} where last_name = $lastName") {
+            return buildPerson(it)
+        }
+    }
+
+    @Override
+    // tag::query-many[]
+    Flowable<Person> findByLastName(String lastName) {
         return bq.query("select * from ${schema}.${table} where last_name = $lastName") {
             return buildPerson(it)
         }
     }
+    // end::query-many[]
 
     @Override
-    Flowable<Person> findByLastName(String lastName) {
-        return bq.query("select * from ${schema}.${table} where last_name = @lastName", lastName: lastName) {
-            return buildPerson(it)
-        }
-    }
-
-    @Override
+    // tag::execute-update[]
     void updateRole(long id, Role role) {
         bq.execute "update ${schema}.${table} set role = $role where id = $id"
     }
+    // end::execute-update[]
 
     @Override
+    // tag::execute-delete[]
     void deletePerson(long id) {
         bq.execute "delete from ${schema}.${table} where id = $id"
     }
+    // end::execute-delete[]
 
     @Override
     void deleteEverything() {
         bq.execute"delete from ${schema}.${table} where 1 = 1"
     }
 
+    // tag::build-person[]
     private static Person buildPerson(RowResult result) {
         new Person(
             id: result.getLongValue('id'),
@@ -108,5 +121,6 @@ class GroovyPersonService implements PersonService {
             enabled: result.getBooleanValue('enabled')
         )
     }
+    // end::build-person[]
 
 }

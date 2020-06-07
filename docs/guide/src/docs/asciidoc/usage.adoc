@@ -2,4 +2,183 @@
 [[_usage]]
 = Usage
 
-In progress...
+The library provides `BigQuery` and `BigQueryService` beans into the application context.
+`BigQueryService` has a couple of useful methods to execute SQL against BigQuery
+data warehouse - `insert`, `query` and `execute`.
+
+In a following examples we're be reffering to a class `Person`:
+
+[source,java,indent=0]
+.Person
+----
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/Person.java[tag=main-code]
+    // getters, setters, equals, hash code
+}
+----
+<1> classes used for database mapping must be annotated with `@Introspected` (if you plan to use `insert` method)
+
+The example bellow are defined inside a person service class:
+
+[source,java,indent=0,role=primary]
+.Java
+----
+@Singleton
+public class JavaPersonService {
+
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/JavaPersonService.java[tag=service]
+
+}
+----
+
+
+[source,groovy,indent=0,role=secondary]
+.Groovy
+----
+@Singleton
+class GroovyPersonService {
+
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/GroovyPersonService.groovy[tag=service]
+
+}
+----
+
+== Inserting New Rows
+
+Inserting new rows is very easy. You only need to suppy the object and the name of the data set and table.
+
+[source,java,indent=0,role=primary]
+.Java
+----
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/JavaPersonService.java[tag=new-person]
+----
+
+
+[source,groovy,indent=0,role=secondary]
+.Groovy
+----
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/GroovyPersonService.groovy[tag=new-person]
+----
+
+== Running Queries
+
+If you want to retrieve single item you can run `querySingle` method which returns an `Optional`:
+
+[source,java,indent=0,role=primary]
+.Java
+----
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/JavaPersonService.java[tag=query-single]
+----
+<1> define the named parameter map
+<2> BigQuery uses `@` prefix for the named parameters, `:` won't be accepted
+<3> `buildPerson` method reference constructs the `Person` object
+
+[source,groovy,indent=0,role=secondary]
+.Groovy
+----
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/GroovyPersonService.groovy[tag=query-single]
+----
+<1> use `GString` to define the query, only variables after first occurence of `where`, `on`, `set`, `values` are considered named parameters so it is safe to use variables for data set and table
+<2> `buildPerson` called from within the closure
+
+If you want to retrieve single more items you can run `query` method which returns `Flowable`:
+
+[source,java,indent=0,role=primary]
+.Java
+----
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/JavaPersonService.java[tag=query-many]
+----
+
+[source,groovy,indent=0,role=secondary]
+.Groovy
+----
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/GroovyPersonService.groovy[tag=query-many]
+----
+
+This is how the `buildPerson` method looks like:
+
+[source,java,indent=0,role=primary]
+.Java
+----
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/JavaPersonService.java[tag=build-person]
+----
+
+
+[source,java,indent=0,role=secondary]
+.Groovy
+----
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/GroovyPersonService.groovy[tag=build-person]
+----
+
+== Executing Write Operations
+
+You can execute write operations using `execute` method. This method does not return any values but if there is a problem
+with your statement it will throw an exception.
+
+This is an example of updating a role of the `Person`:
+
+[source,java,indent=0,role=primary]
+.Java
+----
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/JavaPersonService.java[tag=execute-update]
+----
+<1> define the named parameter map
+<2> BigQuery uses `@` prefix for the named parameters, `:` won't be accepted
+
+[source,groovy,indent=0,role=secondary]
+.Groovy
+----
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/GroovyPersonService.groovy[tag=execute-update]
+----
+
+This is an example of deleting a `Person`:
+
+[source,java,indent=0,role=primary]
+.Java
+----
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/JavaPersonService.java[tag=execute-delete]
+----
+<1> define the named parameter map
+<2> BigQuery uses `@` prefix for the named parameters, `:` won't be accepted
+
+[source,groovy,indent=0,role=secondary]
+.Groovy
+----
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/GroovyPersonService.groovy[tag=execute-delete]
+----
+
+== Testing
+
+Once `micronaut-bigquery-mock` is on the classpath the `BigQueryService` is replaced with pure SQL implementation.
+
+You can use Testcontainers to setup a test database which emulates BigQuery:
+
+[source,groovy,indent=0]
+.Groovy
+----
+@Testcontainers
+class PersonServiceSpec {
+
+include::{root-dir}/libs/micronaut-bigquery-mock/src/test/groovy/com/agorapulse/micronaut/bigquery/mock/SqlBigQueryServiceSpec.groovy[tag=test-setup]
+include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/BigQueryServiceSpec.groovy[tag=test-setup]
+
+include::{root-dir}/libs/micronaut-bigquery-mock/src/test/groovy/com/agorapulse/micronaut/bigquery/mock/SqlBigQueryServiceSpec.groovy[tag=setup-spec]
+
+    void setup() {
+        context = ApplicationContext.build(                                             // <3>
+include::{root-dir}/libs/micronaut-bigquery-mock/src/test/groovy/com/agorapulse/micronaut/bigquery/mock/SqlBigQueryServiceSpec.groovy[tag=build-context]
+        ).build()
+        context.start()
+    }
+
+    void 'test person service'() {
+        given:
+            PersonService service = context.getBean(serviceType)                        // <4>
+            // tests
+    }
+
+}
+----
+<1> Using PostgreSQL running using Testcontainers to emulate BigQuery
+<2> Create the table inside the test database
+<3> Start Micronaut context with a default datasource pointing to the test database
+<4> Get the instance of the service under test from the application context
