@@ -75,7 +75,7 @@ class GroovyPersonService implements PersonService {
 
     @Override
     Flowable<Person> findByLastNameUnsafe(String lastName) {
-        return bq.query(lastName: lastName,"select * from ${schema}.${table} where last_name = $lastName") {
+        return bq.query(lastName: lastName,"select * from ${schema}.${table} where last_name = @lastName") {
             return buildPerson(it)
         }
     }

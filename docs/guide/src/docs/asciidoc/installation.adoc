@@ -2,6 +2,8 @@
 [[_installation]]
 = Installation
 
+The libraries are available in JCenter repository:
+
 .Gradle Installation
 [source,subs='verbatim,attributes']
 ----
@@ -11,10 +13,10 @@ repositories {
 
 dependencies {
     // the main library
-    api 'com.agorapulse:micronaut-bigquery:{project-version}'
+    compile 'com.agorapulse:micronaut-bigquery:{project-version}'
 
     // the mock library for testing
-    testCompile 'com.agorapulse:micronaut-bigqery-mock:{project-version}
+    testCompile 'com.agorapulse:micronaut-bigqery-mock:{project-version}'
 
     // required for testing using Testcontainers (see examples bellow)
     testCompile 'io.micronaut.configuration:micronaut-jdbc-tomcat'
@@ -23,3 +25,21 @@ dependencies {
     testCompile 'org.testcontainers:postgresql:1.14.3'
 }
 ----
+
+== Connectiong to Google Cloud
+
+To get started with the library locally you need to setup `GOOGLE_APPLICATION_CREDENTIALS` environment variable
+pointing to the JSON file obtained from Google Cloud Console. Follow the https://cloud.google.com/bigquery/docs/quickstarts/quickstart-client-libraries[Quickstart: Using client libraries] tutorial
+to get one.
+
+To use the JSON locally for running the application you can add following snippet into your `build.gradle` file:
+
+[source]
+----
+run {
+    environment 'GOOGLE_APPLICATION_CREDENTIALS', file('path/to/credentials.json').absolutePath
+}
+----
+
+If you are using the library within Google Cloud then BigQuery connection will be configured for you once the BigQuery API is enabled
+and configured for the project.
