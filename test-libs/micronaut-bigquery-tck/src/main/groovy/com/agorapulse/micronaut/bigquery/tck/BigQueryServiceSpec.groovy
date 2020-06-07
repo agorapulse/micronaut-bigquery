@@ -30,24 +30,30 @@ import spock.lang.Unroll
 ])
 abstract class BigQueryServiceSpec extends Specification {
 
+    // tag::test-setup[]
     @AutoCleanup ApplicationContext context
+    // end::test-setup[]
 
     BigQueryService bigquery
 
+    // tag::setup[]
     void setup() {
         context = buildContext()
         context.start()
 
         bigquery = context.getBean(BigQueryService)
     }
+    // end::setup[]
 
     abstract ApplicationContext buildContext()
 
     @Unroll
     @SuppressWarnings('AbcMetric')
+    // tag::feature[]
     void 'handle bigquery operations using #serviceType.simpleName'() {
         given:
             PersonService service = context.getBean(serviceType)
+            // end::feature[]
         when:
             service.deleteEverything()
         then:

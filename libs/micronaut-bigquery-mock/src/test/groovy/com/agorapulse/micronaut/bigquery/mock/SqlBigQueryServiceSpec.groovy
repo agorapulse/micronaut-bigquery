@@ -29,9 +29,8 @@ import spock.lang.Shared
 @Testcontainers
 class SqlBigQueryServiceSpec extends BigQueryServiceSpec {
 
-    private static final String DRIVER = 'org.postgresql.Driver'
-
     // language=SQL
+    // tag::test-setup[]
     private static final String TABLE_DEFINITION = '''
     CREATE SCHEMA persons;
     CREATE TABLE persons.persons (
@@ -46,21 +45,32 @@ class SqlBigQueryServiceSpec extends BigQueryServiceSpec {
     );
     '''
 
-    @Shared
-    PostgreSQLContainer container = new PostgreSQLContainer()
+    private static final String DRIVER = 'org.postgresql.Driver'
 
+    @Shared PostgreSQLContainer container = new PostgreSQLContainer()                   // <1>
+    // end::test-setup[]
+
+    // tag::setup-spec[]
     void setupSpec() {
-        Sql sql = Sql.newInstance(container.jdbcUrl, container.username, container.password, DRIVER)
-        sql.execute(TABLE_DEFINITION)
+        Sql sql = Sql.newInstance(
+            container.jdbcUrl,
+            container.username,
+            container.password,
+            DRIVER
+        )
+        sql.execute(TABLE_DEFINITION)                                                   // <2>
     }
+    // end::setup-spec[]
 
     @Override
     ApplicationContext buildContext() {
         return ApplicationContext.build(
+            // tag::build-context[]
             'datasources.default.url': container.jdbcUrl,
             'datasources.default.driverClassName': DRIVER,
             'datasources.default.username': container.username,
             'datasources.default.password': container.password,
+            // end::build-context[]
         ).build()
     }
 

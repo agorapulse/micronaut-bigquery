@@ -7,5 +7,8 @@ in Micronaut application.
 
 The main use case is running simple queries and updates.
 
-There is a Micronaut BigQuery Mock library which allows you to run
+There is a `micronaut-bigquery-mock` artefact which allows you to run
 against an arbitrary database instead of BigQuery.
+
+Groovy language has a first-class support. You can use `GString` to define staments which are
+automatically converted into named SQL statements.

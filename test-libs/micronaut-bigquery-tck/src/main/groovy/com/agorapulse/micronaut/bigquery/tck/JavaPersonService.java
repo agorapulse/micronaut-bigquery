@@ -30,6 +30,7 @@ import java.util.Optional;
 @Singleton
 public class JavaPersonService implements PersonService {
 
+    // tag::service[]
     private final String schema;
     private final String table;
     private final BigQueryService bq;
@@ -43,8 +44,10 @@ public class JavaPersonService implements PersonService {
         this.table = table;
         this.bq = bq;
     }
+    // end::service[]
 
     @Override
+    // tag::new-person[]
     public Person createPerson(String firstName, String lastName, String email, Role role) {
         Person person = new Person();
         person.setId(System.currentTimeMillis());
@@ -55,15 +58,18 @@ public class JavaPersonService implements PersonService {
 
         return bq.insert(person, schema, table);
     }
+    // end::new-person[]
 
     @Override
+    // tag::query-single[]
     public Optional<Person> get(long id) {
         return bq.querySingle(
-            Collections.singletonMap("id", id),
-            String.format("select * from %s.%s where id = @id", schema, table),
-            JavaPersonService::buildPerson
+            Collections.singletonMap("id", id),                                         // <1>
+            String.format("select * from %s.%s where id = @id", schema, table),         // <2>
+            JavaPersonService::buildPerson                                              // <3>
         );
     }
+    // end::query-single[]
 
     @Override
     public Optional<Person> getUnsafe(long id) {
@@ -82,6 +88,7 @@ public class JavaPersonService implements PersonService {
     }
 
     @Override
+    // tag::query-many[]
     public Flowable<Person> findByLastName(String lastName) {
         return bq.query(
             Collections.singletonMap("last_name", lastName),
@@ -89,22 +96,27 @@ public class JavaPersonService implements PersonService {
             JavaPersonService::buildPerson
         );
     }
+    // end::query-many[]
 
     @Override
+    // tag::execute-update[]
     public void updateRole(long id, Role role) {
         bq.execute(
-            ImmutableMap.of("id", id, "role", role),
-            String.format("update %s.%s set role = @role where id = @id", schema, table)
+            ImmutableMap.of("id", id, "role", role),                                    // <1>
+            String.format("update %s.%s set role = @role where id = @id", schema, table)// <2>
         );
     }
+    // end::execute-update[]
 
     @Override
+    // tag::execute-delete[]
     public void deletePerson(long id) {
         bq.execute(
-            Collections.singletonMap("id", id),
-            String.format("delete from %s.%s where id = @id", schema, table)
+            Collections.singletonMap("id", id),                                         // <1>
+            String.format("delete from %s.%s where id = @id", schema, table)            // <2>
         );
     }
+    // end::execute-delete[]
 
     @Override
     public void deleteEverything() {
@@ -113,16 +125,18 @@ public class JavaPersonService implements PersonService {
         );
     }
 
-    private static Person buildPerson(RowResult results) {
+    // tag::build-person[]
+    private static Person buildPerson(RowResult result) {
         Person person = new Person();
-        person.setId(results.getLongValue("id"));
-        person.setFirstName(results.getStringValue("first_name"));
-        person.setLastName(results.getStringValue("last_name"));
-        person.setEmail(results.getStringValue("email"));
-        person.setRole(results.getEnumValue("role", Role.class));
-        person.setScore(results.getDoubleValue("score"));
-        person.setCreated(results.getTimestampValue("created"));
-        person.setEnabled(results.getBooleanValue("enabled"));
+        person.setId(result.getLongValue("id"));
+        person.setFirstName(result.getStringValue("first_name"));
+        person.setLastName(result.getStringValue("last_name"));
+        person.setEmail(result.getStringValue("email"));
+        person.setRole(result.getEnumValue("role", Role.class));
+        person.setScore(result.getDoubleValue("score"));
+        person.setCreated(result.getTimestampValue("created"));
+        person.setEnabled(result.getBooleanValue("enabled"));
         return person;
     }
+    // end::build-person[]
 }

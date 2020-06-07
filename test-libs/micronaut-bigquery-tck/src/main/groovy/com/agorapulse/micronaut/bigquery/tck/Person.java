@@ -22,7 +22,8 @@ import io.micronaut.core.annotation.Introspected;
 import java.time.Instant;
 import java.util.Objects;
 
-@Introspected
+// tag::main-code[]
+@Introspected                                                                           // <1>
 public class Person {
 
     private long id;
@@ -33,6 +34,8 @@ public class Person {
     private String lastName;
     private String email;
     private Role role;
+
+    // end::main-code[]
 
     public long getId() {
         return id;
