@@ -175,6 +175,13 @@ subprojects { subproject ->
     }
 
     clean.dependsOn cleanOut
+
+    config {
+        bintray {
+            name = subproject.name
+            githubRepo = slug
+        }
+    }
 }
 
 check.dependsOn('aggregateCheckstyle', 'aggregateCodenarc', 'aggregateAllTestReports', 'coveralls')

@@ -59,6 +59,8 @@ include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapu
 include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapulse/micronaut/bigquery/tck/GroovyPersonService.groovy[tag=new-person]
 ----
 
+Alternatively you can use `execute` method to have a full control over the SQL statement.
+
 == Running Queries
 
 If you want to retrieve single item you can run `querySingle` method which returns an `Optional`:
