@@ -15,8 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.micronaut.bigquery;
+package com.agorapulse.micronaut.bigquery.impl;
 
+import com.agorapulse.micronaut.bigquery.BigQueryService;
+import com.agorapulse.micronaut.bigquery.RowResult;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Job;

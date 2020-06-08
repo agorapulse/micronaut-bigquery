@@ -19,8 +19,17 @@ package com.agorapulse.micronaut.bigquery;
 
 import java.util.Map;
 
+/**
+ * Parametrized SQL contains the statement and the map of the named parameters.
+ */
 public final class ParameterizedSql {
 
+    /**
+     * Creates the named parameters from the map of named parameters and a SQL statement
+     * @param namedParameters the map of the named parameters
+     * @param sql the sql statement, must contain <code>@</code> as named parameter prefix
+     * @return
+     */
     public static ParameterizedSql from(Map<String, ?> namedParameters, String sql) {
         return new ParameterizedSql(namedParameters, sql);
     }
@@ -30,10 +39,16 @@ public final class ParameterizedSql {
         this.sql = sql;
     }
 
+    /**
+     * @return the map of the named parameters
+     */
     public Map<String, ?> getNamedParameters() {
         return namedParameters;
     }
 
+    /**
+     * @return the SQL statement
+     */
     public String getSql() {
         return sql;
     }

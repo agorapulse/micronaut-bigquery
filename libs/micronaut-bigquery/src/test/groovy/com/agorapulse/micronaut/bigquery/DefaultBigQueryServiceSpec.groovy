@@ -18,24 +18,57 @@
 package com.agorapulse.micronaut.bigquery
 
 import com.agorapulse.micronaut.bigquery.tck.BigQueryServiceSpec
+import com.google.cloud.bigquery.BigQuery
+import com.google.cloud.bigquery.BigQueryOptions
+import com.google.cloud.bigquery.Field
+import com.google.cloud.bigquery.LegacySQLTypeName
+import com.google.cloud.bigquery.Schema
+import com.google.cloud.bigquery.StandardTableDefinition
+import com.google.cloud.bigquery.TableDefinition
+import com.google.cloud.bigquery.TableId
+import com.google.cloud.bigquery.TableInfo
 import io.micronaut.context.ApplicationContext
 import spock.lang.Requires
 
 @SuppressWarnings('ClassStartsWithBlankLine')
 @Requires({
-    System.getenv('GOOGLE_APPLICATION_CREDENTIALS') &&
-        (
-            !System.getenv('GITHUB_REF') ||
-            (
-                System.getenv('GITHUB_REF') && System.getenv('GITHUB_REF').startsWith('refs/heads/')
-            )
-        )
+    System.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 })
 class DefaultBigQueryServiceSpec extends BigQueryServiceSpec {
 
+    private static final BigQuery BG = BigQueryOptions.defaultInstance.service
+    private static final String DATASET_NAME = 'persons'
+    private static final String TABLE_NAME = DATASET_NAME + System.currentTimeMillis()
+
+    void setupSpec() {
+        TableId tableId = TableId.of(DATASET_NAME, TABLE_NAME)
+
+        // Table schema definition
+        Schema schema = Schema.of(
+            Field.of('id', LegacySQLTypeName.INTEGER),
+            Field.of('enabled', LegacySQLTypeName.BOOLEAN),
+            Field.of('created', LegacySQLTypeName.TIMESTAMP),
+            Field.of('score', LegacySQLTypeName.FLOAT),
+            Field.of('first_name', LegacySQLTypeName.STRING),
+            Field.of('last_name', LegacySQLTypeName.STRING),
+            Field.of('email', LegacySQLTypeName.STRING),
+            Field.of('role', LegacySQLTypeName.STRING)
+        )
+        TableDefinition tableDefinition = StandardTableDefinition.of(schema)
+        TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build()
+        BG.create(tableInfo)
+    }
+
+    void cleanupSpec() {
+        BG.delete(TableId.of(DATASET_NAME, TABLE_NAME))
+    }
+
     @Override
     ApplicationContext buildContext() {
-        ApplicationContext.build().build()
+        ApplicationContext.build(
+            'person.schema': DATASET_NAME,
+            'person.table': TABLE_NAME
+        ).build()
     }
 
 }

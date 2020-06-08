@@ -18,7 +18,7 @@
 package com.agorapulse.micronaut.bigquery.mock;
 
 import com.agorapulse.micronaut.bigquery.BigQueryService;
-import com.agorapulse.micronaut.bigquery.DefaultBigQueryService;
+import com.agorapulse.micronaut.bigquery.impl.DefaultBigQueryService;
 import com.agorapulse.micronaut.bigquery.RowResult;
 import com.axiomalaska.jdbc.NamedParameterPreparedStatement;
 import io.micronaut.context.annotation.Replaces;

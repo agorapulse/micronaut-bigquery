@@ -19,15 +19,60 @@ package com.agorapulse.micronaut.bigquery;
 
 import java.time.Instant;
 
+/**
+ * Row result is the abstraction of a row returned from the BigQuery job.
+ */
 public interface RowResult {
 
+    /**
+     * Returns <code>true</code> if the column value returned is null.
+     * @param key the name of the column
+     * @return <code>true</code> if the column value returned is null
+     */
     boolean isNull(String key);
+
+    /**
+     * Returns the boolean value of the column if applicable.
+     * @param key the name of the column
+     * @return the boolean value of the column if applicable
+     */
     Boolean getBooleanValue(String key);
+
+    /**
+     * Returns the double value of the column if applicable.
+     * @param key the name of the column
+     * @return the double value of the column if applicable
+     */
     Double getDoubleValue(String key);
+
+    /**
+     * Returns the string value of the column if applicable.
+     * @param key the name of the column
+     * @return the string value of the column if applicable
+     */
     String getStringValue(String key);
+
+    /**
+     * Returns the long value of the column if applicable.
+     * @param key the name of the column
+     * @return the long value of the column if applicable
+     */
     Long getLongValue(String key);
+
+    /**
+     * Returns the value of the column as {@link Instant} if applicable.
+     * @param key the name of the column
+     * @return the value of the column as {@link Instant} if applicable
+     */
     Instant getTimestampValue(String key);
 
+    /**
+     * Returns the enum value of the column if applicable.
+     * @param key the name of the column
+     * @param enumType the enum type
+     * @param <E> the enum type
+     * @return the enum value of the column if applicable
+     */
     default <E extends Enum<E>> E getEnumValue(String key, Class<E> enumType) {
         return isNull(key) ? null : Enum.valueOf(enumType, getStringValue(key));
     }
