@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.micronaut.bigquery;
+package com.agorapulse.micronaut.bigquery.impl;
 
+import com.agorapulse.micronaut.bigquery.RowResult;
 import com.google.cloud.bigquery.FieldValueList;
 
 import java.time.Instant;

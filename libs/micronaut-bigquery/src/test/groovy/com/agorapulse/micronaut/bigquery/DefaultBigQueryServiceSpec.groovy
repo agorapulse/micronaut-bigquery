@@ -27,6 +27,7 @@ import spock.lang.Requires
         (
             !System.getenv('GITHUB_REF') ||
             (
+                // The test is only executed against branch builds to prevent concurrent access into the test table
                 System.getenv('GITHUB_REF') && System.getenv('GITHUB_REF').startsWith('refs/heads/')
             )
         )

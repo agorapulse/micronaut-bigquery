@@ -34,15 +34,30 @@ public class MicronautBigQueryExtensions {
         " where ", " on ", " set ", " values "
     );
 
+    /**
+     * Runs a SQL query against the BigQuery warehouse and map the results into an object.
+     * @param sql the SQL query {@link GString} which is automatically turning its values into the named parameters
+     * @param builder the closure mapping the result into an object
+     * @param <T> type of the result objects
+     * @return the flowable of objects mapped using the builder
+     */
     public static <T> Flowable<T> query(
         BigQueryService self,
-        GString gString,
+        GString sql,
         @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.bigquery.RowResult") Closure<T> builder
     ) {
-        ParameterizedSql sql = from(self, gString);
-        return self.query(sql.getNamedParameters(), sql.getSql(), FunctionWithDelegate.create(builder));
+        ParameterizedSql parameterizedSql = from(self, sql);
+        return self.query(parameterizedSql.getNamedParameters(), parameterizedSql.getSql(), FunctionWithDelegate.create(builder));
     }
 
+    /**
+     * Runs a SQL query against the BigQuery warehouse and map the results into an object.
+     * @param namedParameters the named parameters for the SQL query
+     * @param sql the SQL query, must contain <code>@</code> as named parameter prefix
+     * @param builder the closure mapping the result into an object
+     * @param <T> type of the result objects
+     * @return the flowable of objects mapped using the builder
+     */
     public static <T> Flowable<T> query(
         BigQueryService self,
         Map<String, ?> namedParameters,
@@ -52,15 +67,30 @@ public class MicronautBigQueryExtensions {
         return self.query(namedParameters, sql, FunctionWithDelegate.create(builder));
     }
 
+    /**
+     * Run a SQL query against the BigQuery warehouse and map the results into an single object if present.
+     * @param sql the SQL query {@link GString} which is automatically turning its values into the named parameters
+     * @param builder the closure mapping the result into an object
+     * @param <T> type of the result objects
+     * @return the optional holding the first returned result or an empty optinal
+     */
     public static <T> Optional<T> querySingle(
         BigQueryService self,
-        GString gString,
+        GString sql,
         @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.bigquery.RowResult") Closure<T> builder
     ) {
-        ParameterizedSql sql = from(self, gString);
-        return self.querySingle(sql.getNamedParameters(), sql.getSql(), FunctionWithDelegate.create(builder));
+        ParameterizedSql parameterizedSql = from(self, sql);
+        return self.querySingle(parameterizedSql.getNamedParameters(), parameterizedSql.getSql(), FunctionWithDelegate.create(builder));
     }
 
+    /**
+     * Run a SQL query against the BigQuery warehouse and map the results into an single object if present.
+     * @param namedParameters the named parameters for the SQL query
+     * @param sql the SQL query, must contain <code>@</code> as named parameter prefix
+     * @param builder the closure mapping the result into an object
+     * @param <T> type of the result objects
+     * @return the optional holding the first returned result or an empty optinal
+     */
     public static <T> Optional<T> querySingle(
         BigQueryService self,
         Map<String, ?> namedParameters,
@@ -70,9 +100,13 @@ public class MicronautBigQueryExtensions {
         return self.querySingle(namedParameters, sql, FunctionWithDelegate.create(builder));
     }
 
-    public static void execute(BigQueryService self, GString gString) {
-        ParameterizedSql sql = from(self, gString);
-        self.execute(sql.getNamedParameters(), sql.getSql());
+    /**
+     * Runs a SQL statement against the BigQuery warehouse.
+     * @param sql the SQL query {@link GString} which is automatically turning its values into the named parameters
+     */
+    public static void execute(BigQueryService self, GString sql) {
+        ParameterizedSql preparedSql = from(self, sql);
+        self.execute(preparedSql.getNamedParameters(), preparedSql.getSql());
     }
 
     private static ParameterizedSql from(BigQueryService service, GString gString) {
