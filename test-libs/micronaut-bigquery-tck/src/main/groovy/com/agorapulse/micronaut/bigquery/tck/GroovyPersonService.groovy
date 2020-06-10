@@ -52,7 +52,8 @@ class GroovyPersonService implements PersonService {
             id: System.currentTimeMillis(),
             firstName: firstName,
             lastName: lastName,
-            role: role
+            role: role,
+            email: email
         ), schema, table)
     }
     // end::new-person[]

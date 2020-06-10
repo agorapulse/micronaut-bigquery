@@ -62,7 +62,10 @@ abstract class BigQueryServiceSpec extends Specification {
         when:
             Person vlad = service.createPerson('Vladimir', 'Orany', 'vlad@agorapulse.com', Role.ADMIN)
         then:
-            noExceptionThrown()
+            vlad.firstName == 'Vladimir'
+            vlad.lastName == 'Orany'
+            vlad.email == 'vlad@agorapulse.com'
+            vlad.role == Role.ADMIN
 
         when:
             Optional<Person> loaded = service.get(vlad.id)

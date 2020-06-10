@@ -116,7 +116,8 @@ public class DefaultBigQueryService implements BigQueryService {
         namedParameters.forEach((key, value) -> {
             Object converted = convertIfNecessary(value);
             if (converted instanceof Instant) {
-                result.put(key, QueryParameterValue.of(((Instant) converted).toEpochMilli(), StandardSQLTypeName.TIMESTAMP));
+                Instant instant = (Instant) converted;
+                result.put(key, QueryParameterValue.timestamp(instant.getEpochSecond() * 1_000_000 + instant.getNano() / 1000));
             } else if (converted != null){
                 result.put(key, QueryParameterValue.of(converted, (Class<Object>) converted.getClass()));
             }
