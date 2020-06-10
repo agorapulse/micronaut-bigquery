@@ -92,7 +92,7 @@ $(addBlockSwitches);
 <h1>Micronaut BigQuery Library</h1>
 <div class="details">
 <span id="author" class="author">Vladimir Orany</span><br>
-<span id="revnumber">version 0.2.2</span>
+<span id="revnumber">version 0.2.3</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -151,10 +151,10 @@ automatically converted into named SQL statements.</p>
 
 dependencies {
     // the main library
-    compile 'com.agorapulse:micronaut-bigquery:0.2.2'
+    compile 'com.agorapulse:micronaut-bigquery:0.2.3'
 
     // the mock library for testing
-    testCompile 'com.agorapulse:micronaut-bigqery-mock:0.2.2'
+    testCompile 'com.agorapulse:micronaut-bigqery-mock:0.2.3'
 
     // required for testing using Testcontainers (see examples bellow)
     testCompile 'io.micronaut.configuration:micronaut-jdbc-tomcat'
@@ -466,7 +466,13 @@ with your statement it will throw an exception.</p>
 <div class="title">Groovy</div>
 <div class="content">
 <pre class="prettyprint highlight"><code data-lang="groovy">void updateRole(long id, Role role) {
-    bq.execute "update ${schema}.${table} set role = $role where id = $id"
+    bq.execute """
+        update ${schema}.${table}
+        set
+            role = $role
+        where
+            id = $id
+    """
 }</code></pre>
 </div>
 </div>
@@ -604,8 +610,8 @@ class PersonServiceSpec {
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.2.2<br>
-Last updated 2020-06-08 09:46:18 UTC
+Version 0.2.3<br>
+Last updated 2020-06-10 07:54:38 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
