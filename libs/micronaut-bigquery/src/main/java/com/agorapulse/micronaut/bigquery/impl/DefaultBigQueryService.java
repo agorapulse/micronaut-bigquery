@@ -26,7 +26,6 @@ import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.QueryParameterValue;
-import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.TableResult;
 import io.reactivex.Flowable;
 
@@ -116,7 +115,8 @@ public class DefaultBigQueryService implements BigQueryService {
         namedParameters.forEach((key, value) -> {
             Object converted = convertIfNecessary(value);
             if (converted instanceof Instant) {
-                result.put(key, QueryParameterValue.of(((Instant) converted).toEpochMilli(), StandardSQLTypeName.TIMESTAMP));
+                Instant instant = (Instant) converted;
+                result.put(key, QueryParameterValue.timestamp(instant.getEpochSecond() * 1_000_000 + instant.getNano() / 1000));
             } else if (converted != null){
                 result.put(key, QueryParameterValue.of(converted, (Class<Object>) converted.getClass()));
             }

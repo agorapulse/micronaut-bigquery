@@ -57,7 +57,13 @@ class FieldValueListRowResult implements RowResult {
 
     @Override
     public Instant getTimestampValue(String key) {
-        return values.get(key).isNull() ? null : Instant.ofEpochMilli(values.get(key).getTimestampValue());
+        if (values.get(key).isNull()) {
+            return null;
+        }
+
+        long timestampValue = values.get(key).getTimestampValue();
+
+        return  Instant.ofEpochSecond(timestampValue / 1_000_000, timestampValue % 1_000_000 * 1000);
     }
 
 }
