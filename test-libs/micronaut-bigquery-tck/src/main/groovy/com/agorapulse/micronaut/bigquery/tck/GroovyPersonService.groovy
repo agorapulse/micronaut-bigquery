@@ -92,7 +92,13 @@ class GroovyPersonService implements PersonService {
     @Override
     // tag::execute-update[]
     void updateRole(long id, Role role) {
-        bq.execute "update ${schema}.${table} set role = $role where id = $id"
+        bq.execute """
+            update ${schema}.${table}
+            set
+                role = $role
+            where
+                id = $id
+        """
     }
     // end::execute-update[]
 
