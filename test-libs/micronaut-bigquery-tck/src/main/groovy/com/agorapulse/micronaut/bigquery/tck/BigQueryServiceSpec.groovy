@@ -97,6 +97,11 @@ abstract class BigQueryServiceSpec extends Specification {
             service.get(vlad.id).get().role == Role.ADMIN
 
         when:
+            service.updateRole(vlad.id, null)
+        then:
+            service.get(vlad.id).get().role == null
+
+        when:
             service.deletePerson(vlad.id)
         then:
             !service.get(vlad.id).present

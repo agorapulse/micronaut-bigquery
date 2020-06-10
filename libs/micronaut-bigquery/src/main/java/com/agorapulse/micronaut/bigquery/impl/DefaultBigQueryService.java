@@ -50,7 +50,7 @@ public class DefaultBigQueryService implements BigQueryService {
     @Override
     public <T> Flowable<T> query(Map<String, ?> namedParameters, String sql, Function<RowResult, T> builder) {
         QueryJobConfiguration queryConfig = QueryJobConfiguration
-            .newBuilder(sql)
+            .newBuilder(checkForNulls(sql, namedParameters))
             .setUseLegacySql(false)
             .setNamedParameters(toNamedParameters(namedParameters))
             .build();
@@ -81,7 +81,7 @@ public class DefaultBigQueryService implements BigQueryService {
     @Override
     public void execute(Map<String, ?> namedParameters, String sql) {
         QueryJobConfiguration queryConfig = QueryJobConfiguration
-            .newBuilder(sql)
+            .newBuilder(checkForNulls(sql, namedParameters))
             .setUseLegacySql(false)
             .setNamedParameters(toNamedParameters(namedParameters))
             .build();
@@ -117,11 +117,21 @@ public class DefaultBigQueryService implements BigQueryService {
             Object converted = convertIfNecessary(value);
             if (converted instanceof Instant) {
                 result.put(key, QueryParameterValue.of(((Instant) converted).toEpochMilli(), StandardSQLTypeName.TIMESTAMP));
-            } else {
+            } else if (converted != null){
                 result.put(key, QueryParameterValue.of(converted, (Class<Object>) converted.getClass()));
             }
         });
 
+        return result;
+    }
+
+    private String checkForNulls(String sql, Map<String, ?> namedParameters) {
+        String result = sql;
+        for(Map.Entry<String, ?> entry : namedParameters.entrySet()) {
+            if (entry.getValue() == null) {
+                result = result.replace("@" + entry.getKey(), "null");
+            }
+        }
         return result;
     }
 
