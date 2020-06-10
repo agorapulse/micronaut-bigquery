@@ -19,12 +19,13 @@ package com.agorapulse.micronaut.bigquery.tck;
 
 import com.agorapulse.micronaut.bigquery.BigQueryService;
 import com.agorapulse.micronaut.bigquery.RowResult;
-import com.google.common.collect.ImmutableMap;
 import io.micronaut.context.annotation.Value;
 import io.reactivex.Flowable;
 
 import javax.inject.Singleton;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Singleton
@@ -101,8 +102,12 @@ public class JavaPersonService implements PersonService {
     @Override
     // tag::execute-update[]
     public void updateRole(long id, Role role) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("id", id);
+        parameters.put("role", role);
+
         bq.execute(
-            ImmutableMap.of("id", id, "role", role),                                    // <1>
+            parameters,                                                                 // <1>
             String.format("update %s.%s set role = @role where id = @id", schema, table)// <2>
         );
     }
