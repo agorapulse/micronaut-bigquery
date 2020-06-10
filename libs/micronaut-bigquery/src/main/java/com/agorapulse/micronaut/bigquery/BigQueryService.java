@@ -23,8 +23,6 @@ import io.micronaut.core.beans.BeanIntrospector;
 import io.micronaut.core.beans.BeanProperty;
 import io.reactivex.Flowable;
 
-import java.time.Instant;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -160,9 +158,6 @@ public interface BigQueryService {
     default Object convertIfNecessary(Object object) {
         if (object instanceof Enum) {
             return object.toString();
-        }
-        if (object instanceof TemporalAccessor) {
-            return Instant.from((TemporalAccessor) object);
         }
 
         return object;
