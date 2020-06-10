@@ -92,7 +92,7 @@ $(addBlockSwitches);
 <h1>Micronaut BigQuery Library</h1>
 <div class="details">
 <span id="author" class="author">Vladimir Orany</span><br>
-<span id="revnumber">version 0.2.4</span>
+<span id="revnumber">version 0.2.5</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -151,10 +151,10 @@ automatically converted into named SQL statements.</p>
 
 dependencies {
     // the main library
-    compile 'com.agorapulse:micronaut-bigquery:0.2.4'
+    compile 'com.agorapulse:micronaut-bigquery:0.2.5'
 
     // the mock library for testing
-    testCompile 'com.agorapulse:micronaut-bigqery-mock:0.2.4'
+    testCompile 'com.agorapulse:micronaut-bigqery-mock:0.2.5'
 
     // required for testing using Testcontainers (see examples bellow)
     testCompile 'io.micronaut.configuration:micronaut-jdbc-tomcat'
@@ -303,7 +303,8 @@ class GroovyPersonService {
         id: System.currentTimeMillis(),
         firstName: firstName,
         lastName: lastName,
-        role: role
+        role: role,
+        email: email
     ), schema, table)
 }</code></pre>
 </div>
@@ -614,8 +615,8 @@ class PersonServiceSpec {
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.2.4<br>
-Last updated 2020-06-10 09:50:02 UTC
+Version 0.2.5<br>
+Last updated 2020-06-10 10:42:34 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
