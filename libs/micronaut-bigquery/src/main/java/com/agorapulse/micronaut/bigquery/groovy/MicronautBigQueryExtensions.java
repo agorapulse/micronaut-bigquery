@@ -26,13 +26,19 @@ import groovy.transform.stc.FromString;
 import io.reactivex.Flowable;
 import space.jasan.support.groovy.closure.FunctionWithDelegate;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MicronautBigQueryExtensions {
 
-    private static final List<String> PLACEHOLDERS_ALLOWED_AFTER_KEYWORD = Arrays.asList(
-        " where ", " on ", " set ", " values "
-    );
+    private static final List<Pattern> PLACEHOLDERS_ALLOWED_AFTER_KEYWORD = Stream.of("where", "on", "set", "values")
+        .map(keyword -> Pattern.compile(".*\\s" + keyword + "\\s.*", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL))
+        .collect(Collectors.toList());
 
     /**
      * Runs a SQL query against the BigQuery warehouse and map the results into an object.
@@ -116,7 +122,7 @@ public class MicronautBigQueryExtensions {
             builder.append(gString.getStrings()[i]);
             String current = builder.toString().toLowerCase();
             if (i != gString.getStrings().length - 1) {
-                if (PLACEHOLDERS_ALLOWED_AFTER_KEYWORD.stream().anyMatch(current::contains)) {
+                if (PLACEHOLDERS_ALLOWED_AFTER_KEYWORD.stream().anyMatch(keyword -> keyword.matcher(current).matches())) {
                     String varName = "var" + i;
                     builder.append("@").append(varName);
                     namedParameters.put(varName, service.convertIfNecessary(gString.getValues()[i]));
