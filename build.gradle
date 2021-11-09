@@ -145,7 +145,7 @@ subprojects { subproject ->
         testCompile "io.micronaut:micronaut-inject-groovy"
         testCompile "io.micronaut.test:micronaut-test-spock"
 
-        testCompile("org.spockframework:spock-core") {
+        testCompile("org.spockframework:spock-core:$spockVersion") {
             exclude group: "org.codehaus.groovy", module: "groovy-all"
         }
         testCompile 'net.bytebuddy:byte-buddy:1.10.6'
