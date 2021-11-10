@@ -23,10 +23,8 @@ config {
 
 dependencies {
     api project(':micronaut-bigquery')
-
-    api ('org.spockframework:spock-core') {
-        exclude group: 'org.codehaus.groovy', module: 'groovy-all'
-    }
+    api platform("org.spockframework:spock-bom:$spockVersion")
+    api 'org.spockframework:spock-core'
 
     compileOnly 'io.micronaut:micronaut-inject-groovy'
 }

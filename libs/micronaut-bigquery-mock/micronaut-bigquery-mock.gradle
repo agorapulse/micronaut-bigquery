@@ -29,9 +29,7 @@ dependencies {
 
     testCompile 'io.micronaut.configuration:micronaut-jdbc-tomcat'
     testCompile 'org.postgresql:postgresql:42.2.9'
-    testCompile "org.testcontainers:spock", {
-        exclude group: 'org.spockframework', module: 'spock-core'
-    }
+    testCompile "org.testcontainers:spock"
     testCompile "org.testcontainers:postgresql"
     testCompile "org.codehaus.groovy:groovy-sql"
 }
