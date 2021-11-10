@@ -31,4 +31,5 @@ dependencies {
     testCompile 'org.postgresql:postgresql:42.2.9'
     testCompile 'org.testcontainers:spock:1.14.3'
     testCompile 'org.testcontainers:postgresql:1.14.3'
+    testCompile "org.codehaus.groovy:groovy-sql"
 }
