@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020 Agorapulse.
+ * Copyright 2020-2021 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ class GroovyPersonService implements PersonService {
 
     @Override
     Flowable<Person> findByLastNameUnsafe(String lastName) {
-        return bq.query(lastName: lastName,"select * from ${schema}.${table} where last_name = @lastName") {
+        return bq.query(lastName: lastName, "select * from ${schema}.${table} where last_name = @lastName") {
             return buildPerson(it)
         }
     }
@@ -117,7 +117,7 @@ class GroovyPersonService implements PersonService {
 
     // tag::build-person[]
     private static Person buildPerson(RowResult result) {
-        new Person(
+        return new Person(
             id: result.getLongValue('id'),
             firstName: result.getStringValue('first_name'),
             lastName: result.getStringValue('last_name'),
