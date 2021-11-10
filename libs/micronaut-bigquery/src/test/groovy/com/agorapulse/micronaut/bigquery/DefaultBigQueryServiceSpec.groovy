@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020 Agorapulse.
+ * Copyright 2020-2021 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ class DefaultBigQueryServiceSpec extends BigQueryServiceSpec {
 
     @Override
     ApplicationContext buildContext() {
-        ApplicationContext.build(
+        return ApplicationContext.build(
             'person.schema': DATASET_NAME,
             'person.table': TABLE_NAME
         ).build()

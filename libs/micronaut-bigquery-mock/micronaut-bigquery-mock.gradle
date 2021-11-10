@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020 Agorapulse.
+ * Copyright 2020-2021 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 config {
-    bintray {
+    publishing {
         enabled = true
     }
 }
@@ -29,6 +29,7 @@ dependencies {
 
     testCompile 'io.micronaut.configuration:micronaut-jdbc-tomcat'
     testCompile 'org.postgresql:postgresql:42.2.9'
-    testCompile 'org.testcontainers:spock:1.14.3'
-    testCompile 'org.testcontainers:postgresql:1.14.3'
+    testCompile "org.testcontainers:spock"
+    testCompile "org.testcontainers:postgresql"
+    testCompile "org.codehaus.groovy:groovy-sql"
 }

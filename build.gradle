@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020 Agorapulse.
+ * Copyright 2020-2021 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,17 @@
  */
 plugins {
     id 'org.kordamp.gradle.groovy-project'
-    id 'org.kordamp.gradle.bintray'
     id 'org.kordamp.gradle.checkstyle'
     id 'org.kordamp.gradle.codenarc'
     id 'org.kordamp.gradle.coveralls'
+    id 'io.github.gradle-nexus.publish-plugin'
 }
 
-if (!project.hasProperty('bintrayUsername')) ext.bintrayUsername = '**UNDEFINED**'
-if (!project.hasProperty('bintrayApiKey'))   ext.bintrayApiKey   = '**UNDEFINED**'
+if (!project.hasProperty('ossrhUsername'))      ext.ossrhUsername       = System.getenv('SONATYPE_USERNAME') ?: '**UNDEFINED**'
+if (!project.hasProperty('ossrhPassword'))      ext.ossrhPassword       = System.getenv('SONATYPE_PASSWORD') ?: '**UNDEFINED**'
+if (!project.hasProperty('signingKeyId'))       ext.signingKeyId        = System.getenv('SIGNING_KEY_ID') ?: '**UNDEFINED**'
+if (!project.hasProperty('signingPassword'))    ext.signingPassword     = System.getenv('SIGNING_PASSWORD') ?: '**UNDEFINED**'
+if (!project.hasProperty('signingSecretKey'))   ext.signingSecretKey    = System.getenv('SIGNING_SECRET_KEY_PATH') ? rootProject.file(System.getenv('SIGNING_SECRET_KEY_PATH')).text : '**UNDEFINED**'
 
 config {
     release = (rootProject.findProperty('release') ?: false).toBoolean()
@@ -69,21 +72,15 @@ config {
     }
 
     publishing {
-        signing             = false
-        releasesRepository  = 'localRelease'
-        snapshotsRepository = 'localSnapshot'
-    }
-
-    bintray {
-        credentials {
-            username = bintrayUsername
-            password = bintrayApiKey
+        enabled = false
+        signing {
+            enabled = true
+            keyId = signingKeyId
+            secretKey = signingSecretKey
+            password = signingPassword
         }
-        // TODO: replace
-        userOrg    = 'agorapulse'
-        repo       = 'libs'
-        name       = 'micronaut-bigquery'
-        publish    = true
+        releasesRepository = 'localRelease'
+        snapshotsRepository = 'localSnapshot'
     }
 
     quality {
@@ -105,11 +102,18 @@ config {
     }
 }
 
+nexusPublishing {
+    repositories {
+        sonatype {
+            username = ossrhUsername
+            password = ossrhPassword
+        }
+    }
+}
+
 allprojects {
     repositories {
-        jcenter()
         mavenCentral()
-        maven { url  "https://dl.bintray.com/agorapulse/libs" }
         maven { url "https://repo.spring.io/release"  }
     }
 
@@ -130,6 +134,12 @@ subprojects { subproject ->
         compile platform("io.micronaut:micronaut-bom:" + micronautVersion)
         testAnnotationProcessor platform("io.micronaut:micronaut-bom:" + micronautVersion)
 
+        annotationProcessor platform("org.codehaus.groovy:groovy-bom:" + groovyVersion)
+        compile platform("org.codehaus.groovy:groovy-bom:" + groovyVersion)
+        testAnnotationProcessor platform("org.codehaus.groovy:groovy-bom:" + groovyVersion)
+        testCompileOnly platform("org.codehaus.groovy:groovy-bom:" + groovyVersion)
+        testCompile platform("org.codehaus.groovy:groovy-bom:" + groovyVersion)
+
         annotationProcessor "io.micronaut:micronaut-inject-java"
         annotationProcessor "io.micronaut:micronaut-validation"
 
@@ -145,9 +155,14 @@ subprojects { subproject ->
         testCompile "io.micronaut:micronaut-inject-groovy"
         testCompile "io.micronaut.test:micronaut-test-spock"
 
-        testCompile("org.spockframework:spock-core") {
-            exclude group: "org.codehaus.groovy", module: "groovy-all"
-        }
+        testCompile platform("org.testcontainers:testcontainers-bom:$testcontainersVersion")
+        testCompile platform("org.spockframework:spock-bom:$spockVersion")
+        testCompile platform("org.junit:junit-bom:$junitVersion")
+
+        testCompile 'org.spockframework:spock-core'
+        testCompile 'org.junit.jupiter:junit-jupiter-engine'
+        testCompile 'org.junit.jupiter:junit-jupiter-api'
+
         testCompile 'net.bytebuddy:byte-buddy:1.10.6'
         testCompile "org.objenesis:objenesis:3.1"
     }
@@ -164,7 +179,9 @@ subprojects { subproject ->
     }
 
     // location independent tests (useful for stable CI builds)
-    tasks.withType(Test){
+    tasks.withType(Test) {
+        useJUnitPlatform()
+
         systemProperty 'user.timezone', 'UTC'
         systemProperty 'user.language', 'en'
     }
@@ -175,13 +192,6 @@ subprojects { subproject ->
     }
 
     clean.dependsOn cleanOut
-
-    config {
-        bintray {
-            name = subproject.name
-            githubRepo = slug
-        }
-    }
 }
 
 check.dependsOn('aggregateCheckstyle', 'aggregateCodenarc', 'aggregateAllTestReports', 'coveralls')
