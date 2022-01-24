@@ -92,7 +92,7 @@ $(addBlockSwitches);
 <h1>Micronaut BigQuery Library</h1>
 <div class="details">
 <span id="author" class="author">Vladimir Orany</span><br>
-<span id="revnumber">version 0.2.6</span>
+<span id="revnumber">version 0.3.1-micronaut-3.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -151,13 +151,13 @@ automatically converted into named SQL statements.</p>
 
 dependencies {
     // the main library
-    compile 'com.agorapulse:micronaut-bigquery:0.2.6'
+    compile 'com.agorapulse:micronaut-bigquery:0.3.1-micronaut-3.0'
 
     // the mock library for testing
-    testCompile 'com.agorapulse:micronaut-bigqery-mock:0.2.6'
+    testCompile 'com.agorapulse:micronaut-bigqery-mock:0.3.1-micronaut-3.0'
 
     // required for testing using Testcontainers (see examples bellow)
-    testCompile 'io.micronaut.configuration:micronaut-jdbc-tomcat'
+    testCompile 'io.micronaut.sql:micronaut-jdbc-tomcat'
     testCompile 'org.postgresql:postgresql:42.2.9'
     testCompile 'org.testcontainers:spock:1.14.3'
     testCompile 'org.testcontainers:postgresql:1.14.3'
@@ -417,7 +417,7 @@ class GroovyPersonService {
 <div class="title">Groovy</div>
 <div class="content">
 <pre class="prettyprint highlight"><code data-lang="java">private static Person buildPerson(RowResult result) {
-    new Person(
+    return new Person(
         id: result.getLongValue('id'),
         firstName: result.getStringValue('first_name'),
         lastName: result.getStringValue('last_name'),
@@ -560,7 +560,7 @@ class PersonServiceSpec {
     }
 
     void setup() {
-        context = ApplicationContext.build(                                             <i class="conum" data-value="3"></i><b>(3)</b>
+        context = ApplicationContext.builder(                                           <i class="conum" data-value="3"></i><b>(3)</b>
             'datasources.default.url': container.jdbcUrl,
             'datasources.default.driverClassName': DRIVER,
             'datasources.default.username': container.username,
@@ -615,8 +615,8 @@ class PersonServiceSpec {
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 0.2.6<br>
-Last updated 2021-04-13 05:03:44 UTC
+Version 0.3.1-micronaut-3.0<br>
+Last updated 2021-11-10 10:25:03 +0100
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
