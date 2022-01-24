@@ -130,6 +130,7 @@ subprojects { subproject ->
 
     apply plugin: 'groovy'
     apply plugin: 'java-library'
+    apply plugin: 'micronaut-compatibility'
 
     dependencies {
         annotationProcessor platform("io.micronaut:micronaut-bom:" + micronautVersion)
