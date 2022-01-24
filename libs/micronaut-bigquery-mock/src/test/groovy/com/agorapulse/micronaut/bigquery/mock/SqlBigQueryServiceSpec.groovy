@@ -64,7 +64,7 @@ class SqlBigQueryServiceSpec extends BigQueryServiceSpec {
 
     @Override
     ApplicationContext buildContext() {
-        return ApplicationContext.build(
+        return ApplicationContext.builder(
             // tag::build-context[]
             'datasources.default.url': container.jdbcUrl,
             'datasources.default.driverClassName': DRIVER,

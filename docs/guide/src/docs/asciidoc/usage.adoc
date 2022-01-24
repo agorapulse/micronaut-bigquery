@@ -166,7 +166,7 @@ include::{root-dir}/test-libs/micronaut-bigquery-tck/src/main/groovy/com/agorapu
 include::{root-dir}/libs/micronaut-bigquery-mock/src/test/groovy/com/agorapulse/micronaut/bigquery/mock/SqlBigQueryServiceSpec.groovy[tag=setup-spec]
 
     void setup() {
-        context = ApplicationContext.build(                                             // <3>
+        context = ApplicationContext.builder(                                           // <3>
 include::{root-dir}/libs/micronaut-bigquery-mock/src/test/groovy/com/agorapulse/micronaut/bigquery/mock/SqlBigQueryServiceSpec.groovy[tag=build-context]
         ).build()
         context.start()

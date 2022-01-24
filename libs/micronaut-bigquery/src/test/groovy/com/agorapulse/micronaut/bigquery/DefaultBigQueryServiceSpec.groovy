@@ -65,7 +65,7 @@ class DefaultBigQueryServiceSpec extends BigQueryServiceSpec {
 
     @Override
     ApplicationContext buildContext() {
-        return ApplicationContext.build(
+        return ApplicationContext.builder(
             'person.schema': DATASET_NAME,
             'person.table': TABLE_NAME
         ).build()
