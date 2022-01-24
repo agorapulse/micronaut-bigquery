@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020-2021 Agorapulse.
+ * Copyright 2020-2022 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ class SqlBigQueryServiceSpec extends BigQueryServiceSpec {
 
     @Override
     ApplicationContext buildContext() {
-        return ApplicationContext.build(
+        return ApplicationContext.builder(
             // tag::build-context[]
             'datasources.default.url': container.jdbcUrl,
             'datasources.default.driverClassName': DRIVER,

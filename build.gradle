@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020-2021 Agorapulse.
+ * Copyright 2020-2022 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,6 +130,7 @@ subprojects { subproject ->
 
     apply plugin: 'groovy'
     apply plugin: 'java-library'
+    apply plugin: 'micronaut-compatibility'
 
     dependencies {
         annotationProcessor platform("io.micronaut:micronaut-bom:" + micronautVersion)
@@ -148,6 +149,9 @@ subprojects { subproject ->
         compile "io.micronaut:micronaut-inject"
         compile "io.micronaut:micronaut-validation"
         compile "io.micronaut:micronaut-runtime"
+
+        implementation 'javax.inject:javax.inject:1'
+        implementation 'io.reactivex.rxjava2:rxjava:2.2.10'
 
         compileOnly "org.codehaus.groovy:groovy"
 

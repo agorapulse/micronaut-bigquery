@@ -19,7 +19,7 @@ dependencies {
     testCompile 'com.agorapulse:micronaut-bigqery-mock:{project-version}'
 
     // required for testing using Testcontainers (see examples bellow)
-    testCompile 'io.micronaut.configuration:micronaut-jdbc-tomcat'
+    testCompile 'io.micronaut.sql:micronaut-jdbc-tomcat'
     testCompile 'org.postgresql:postgresql:42.2.9'
     testCompile 'org.testcontainers:spock:1.14.3'
     testCompile 'org.testcontainers:postgresql:1.14.3'
