@@ -22,7 +22,7 @@ jobs:
         java-version: 1.8
     - name: Restore Google Credentials
       run: echo $GOOGLE_APPLICATION_CREDENTIALS_JSON > libs/micronaut-bigquery/src/test/resources/google-credentials.json
-    - uses: eskatos/gradle-command-action@v1
+    - uses: gradle/gradle-command-action@v2
       with:
         arguments: check --stacktrace
         gradle-version: rc
